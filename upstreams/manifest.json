@@ -1,0 +1,136 @@
+{
+  "version": 1,
+  "researchedOn": "2026-09-08",
+  "sources": [
+    {
+      "id": "mattpocock-skills",
+      "repository": "https://github.com/mattpocock/skills",
+      "revision": "3cca18b368ae95cdbdebbff572ccafa662551015",
+      "license": "MIT",
+      "kind": "adapted",
+      "licenseFiles": [
+        "LICENSE"
+      ],
+      "references": [],
+      "adaptations": [
+        {
+          "local": "skills/issue-workflow",
+          "sources": [
+            "skills/engineering/ask-matt/SKILL.md",
+            "skills/engineering/ask-matt/PHASE-BOUNDARIES.md"
+          ],
+          "changes": "Product-only routing, conditional artifacts, resumable decisions, explicit native Pstack boundary; no implementation flow or uninterrupted-context dependency."
+        },
+        {
+          "local": "skills/shape-feature",
+          "sources": [
+            "skills/engineering/grill-with-docs/SKILL.md",
+            "skills/productivity/grilling/SKILL.md",
+            "skills/engineering/domain-modeling/SKILL.md",
+            "skills/engineering/domain-modeling/CONTEXT-FORMAT.md",
+            "skills/engineering/domain-modeling/ADR-FORMAT.md"
+          ],
+          "changes": "Incorporates wrapper dependencies directly; small progressive question rounds, evidence before questions, fact/decision/assumption ledger; no forced global glossary or architecture decisions."
+        },
+        {
+          "local": "skills/wireframe-feature",
+          "sources": [
+            "skills/engineering/prototype/SKILL.md",
+            "skills/engineering/prototype/LOGIC.md",
+            "skills/engineering/prototype/UI.md"
+          ],
+          "changes": "Keeps the question-driven prototype idea; defaults to Markdown, isolated synthetic-data HTML only when useful; removes app-route edits, production promotion, throwaway branches, and infrastructure dependencies."
+        },
+        {
+          "local": "skills/write-feature-spec",
+          "sources": [
+            "skills/engineering/to-spec/SKILL.md"
+          ],
+          "changes": "Preserves synthesis of settled decisions; adds flows, permissions, observable criteria and revisioned review; separates publishing and implementation/test strategy."
+        },
+        {
+          "local": "skills/publish-linear",
+          "sources": [
+            "skills/engineering/to-tickets/SKILL.md"
+          ],
+          "changes": "Linear-first enrichment, supported vertical slices, context preservation, current quality gate, verified writes, duplicate avoidance and offline fallback; no setup-matt-pocock-skills dependency or ready-for-agent label assumption."
+        },
+        {
+          "local": "skills/handoff",
+          "sources": [
+            "skills/productivity/handoff/SKILL.md"
+          ],
+          "changes": "Durable project artifacts, access-aware cold starts, Linear context, readiness checks and native Pstack continuation instead of temporary-only storage."
+        }
+      ]
+    },
+    {
+      "id": "open-pstack",
+      "repository": "https://github.com/ericlitman/open-pstack",
+      "revision": "56bfd14418fa733e34d98f714f357d28788470e3",
+      "license": "MIT (multiple copyright holders)",
+      "kind": "external",
+      "licenseFiles": [
+        "LICENSE",
+        "LICENSE-cursor-team-kit",
+        "LICENSE-superpowers",
+        "NOTICE.md"
+      ],
+      "references": [
+        "README.md",
+        "plugins/pstack/skills/poteto-mode/SKILL.md",
+        "plugins/pstack/skills/poteto-mode/references/codex-tools.md"
+      ],
+      "adaptations": []
+    },
+    {
+      "id": "spec-kit",
+      "repository": "https://github.com/github/spec-kit",
+      "revision": "3a19a6ba900e34a9f5e02848fb8737d1c364a04b",
+      "license": "MIT",
+      "kind": "inspiration",
+      "licenseFiles": [
+        "LICENSE"
+      ],
+      "references": [
+        "templates/commands/specify.md",
+        "templates/commands/clarify.md",
+        "templates/commands/checklist.md",
+        "templates/commands/analyze.md",
+        "templates/commands/tasks.md",
+        "templates/commands/taskstoissues.md"
+      ],
+      "adaptations": []
+    },
+    {
+      "id": "knowledge-work-plugins",
+      "repository": "https://github.com/anthropics/knowledge-work-plugins",
+      "revision": "785ee867160961a2e6061eb46c8db8b88676e43f",
+      "license": "Apache-2.0",
+      "kind": "inspiration",
+      "licenseFiles": [
+        "LICENSE",
+        "product-management/LICENSE"
+      ],
+      "references": [
+        "product-management/skills/write-spec/SKILL.md"
+      ],
+      "adaptations": []
+    },
+    {
+      "id": "builderio-skills",
+      "repository": "https://github.com/BuilderIO/skills",
+      "revision": "8cd59582774e0badf23796a6fc86c26c7117988e",
+      "license": "MIT",
+      "kind": "inspiration",
+      "licenseFiles": [
+        "LICENSE"
+      ],
+      "references": [
+        "skills/visual-plan/SKILL.md",
+        "skills/visual-plan/references/wireframe.md"
+      ],
+      "adaptations": []
+    }
+  ]
+}
