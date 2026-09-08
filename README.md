@@ -82,17 +82,17 @@ The installer can replace same-name skills. See [compatibility and installation]
 
 ### Remove
 
-Remove these nine skill names from personal Codex and Claude Code installations:
+Remove these nine skill names from all personal agent installations, including Codex and Claude Code:
 
 ```bash
 DISABLE_TELEMETRY=1 npx skills@latest remove \
   issue-workflow investigate-issue shape-feature \
   design-user-flow wireframe-feature write-feature-spec \
   review-feature-spec publish-linear handoff \
-  -g -a codex claude-code
+  -g
 ```
 
-Removal matches names, not the source repository. Check the selection before confirming; avoid `--all`, which selects other skills too. For project installs, run from the target project and omit `-g`. Start a fresh agent session afterward. No separate install or removal script is required.
+Removal matches names, not the source repository. Check the names before running; avoid `--all`, which selects other skills too. Omitting `-a` also removes shared copies across agents. Restricting removal to `-a codex claude-code` can leave shared skills discoverable in Codex when another agent uses the same directory. For project installs, run from the target project and omit `-g`. Start a fresh agent session afterward. No separate install or removal script is required.
 
 ## Workflows and artifacts
 

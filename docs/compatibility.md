@@ -51,19 +51,21 @@ That updates an installed skill from **this repository**. Reviewing and adapting
 
 ## Remove installed skills
 
-For a personal installation in both hosts, use the CLI's [named removal command](https://github.com/vercel-labs/skills#skills-remove):
+For complete removal of this collection from all personal agent installations, including Codex and Claude Code, use the CLI's [named removal command](https://github.com/vercel-labs/skills#skills-remove):
 
 ```bash
 DISABLE_TELEMETRY=1 npx skills@latest remove \
   issue-workflow investigate-issue shape-feature \
   design-user-flow wireframe-feature write-feature-spec \
   review-feature-spec publish-linear handoff \
-  -g -a codex claude-code
+  -g
 ```
 
-Removal matches the listed names, not a GitHub repository identity. Check the selection before confirming, especially if a same-name skill now comes from another collection. Do not use `--all` or `-s '*'` to remove just this collection: those also select unrelated installed skills.
+Removal matches the listed names, not a GitHub repository identity. Check the names before running, especially if a same-name skill now comes from another collection. The CLI prompts in a normal terminal but may skip confirmation when it detects an agent. Do not use `--all` or `-s '*'` to remove just this collection: those also select unrelated installed skills.
 
-For only one host, keep only its name after `-a`. For a project installation, run from that product project's root and omit `-g`. Start a fresh agent session afterward. The source checkout and its product artifacts are separate from CLI-managed installed copies.
+Omitting `-a` targets the named skills across all agents, allowing removal of their shared canonical directories. To request removal only from selected hosts, append `-a codex claude-code` or one host name. That can preserve shared copies when other detected agents use them. In the isolated test, selecting those two hosts removed Claude's links but retained `.agents/skills` files, which Codex can still discover. Use the complete-removal command when the intent is to uninstall this collection everywhere.
+
+For a project installation, run from that product project's root and omit `-g`. Start a fresh agent session afterward. The source checkout and its product artifacts are separate from CLI-managed installed copies.
 
 For manual development links created below, remove only the individual symlinks you created from the selected host's skill directory after checking their targets. Keep the source `skills/` tree. The CLI commands above cover CLI-managed installs; they are not a blanket cleanup of every possible manual setup.
 
