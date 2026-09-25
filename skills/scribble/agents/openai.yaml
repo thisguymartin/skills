@@ -1,0 +1,4 @@
+interface:
+  display_name: "Scribble"
+  short_description: "Readable single-file HTML artifacts"
+  default_prompt: "Use $scribble to turn this into a sourced, readable HTML artifact."

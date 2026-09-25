@@ -2,7 +2,7 @@
 
 Checked 2026-09-08 against the [Agent Skills specification](https://agentskills.io/specification), [official Codex skill documentation](https://developers.openai.com/codex/skills/), [Claude Code skill documentation](https://code.claude.com/docs/en/skills), and [Skills CLI documentation](https://github.com/vercel-labs/skills). Confidence: high for the tested installer and documented local discovery; native invocation across both clients has not been smoke-tested here.
 
-Every skill uses standard `name`, `description`, and `license` frontmatter plus Markdown and relative references. No host-specific hooks, model restrictions, tool allowlists, or mandatory MCP server names. The runtime chooses how to invoke skills and ask questions. Each entrypoint is useful on its own; the full router expects the other shaping capabilities to be installed.
+Every skill uses standard `name`, `description`, and `license` frontmatter plus Markdown and relative references. No host-specific hooks, model restrictions, tool allowlists, or mandatory MCP server names. The runtime chooses how to invoke skills and ask questions. Each entrypoint is useful on its own; the full router expects the other shaping capabilities to be installed. Similarly, the research/artifact quartet (`scribble`, `scribble-research`, `source-synthesis`, `tool-evaluation`) shares reference material through `scribble-research/references/artifact-patterns.md` — `scribble`, `source-synthesis`, and `tool-evaluation` point at it via a `../scribble-research/` sibling path, so a selective install that omits `scribble-research` leaves that shared checklist unresolved. Install the four together.
 
 | Host | Personal skills | Project skills | Explicit use |
 | --- | --- | --- | --- |
@@ -13,13 +13,13 @@ Both documented local discovery mechanisms support symlinked skill directories. 
 
 ## One-command install
 
-Use the existing Skills CLI with **Node 22.20+**, the minimum declared by the checked `skills@1.5.25` release. To install all nine skills for Codex and Claude Code from this repository's root:
+Use the existing Skills CLI with **Node 22.20+**, the minimum declared by the checked `skills@1.5.25` release. To install all thirteen skills for Codex and Claude Code from this repository's root:
 
 ```bash
 DISABLE_TELEMETRY=1 npx skills@latest add . -g -a codex claude-code -s '*'
 ```
 
-The intended GitHub remote is `thisguymartin/skills`. Once published there, the equivalent command from any directory is:
+The repository is published at `thisguymartin/skills`. The equivalent command from any directory is:
 
 ```bash
 DISABLE_TELEMETRY=1 npx skills@latest add https://github.com/thisguymartin/skills -g -a codex claude-code -s '*'
@@ -33,13 +33,13 @@ DISABLE_TELEMETRY=1 npx skills@latest add https://github.com/thisguymartin/skill
 | Into one product project | Run from that project's root, use the absolute path to this checkout or the published GitHub source, and omit `-g` |
 | Nothing yet; preview available skills | Run `npx skills@latest add . --list` from this checkout |
 
-`-g` selects a personal install; `-s '*'` selects all nine skills. Target agents explicitly: `--all` also selects every agent supported by the installer. `DISABLE_TELEMETRY=1` opts out of the installer's [telemetry](https://www.skills.sh/docs/cli#telemetry). Use that prefix on subsequent CLI commands too if desired.
+`-g` selects a personal install; `-s '*'` selects all thirteen skills. Target agents explicitly: `--all` also selects every agent supported by the installer. `DISABLE_TELEMETRY=1` opts out of the installer's [telemetry](https://www.skills.sh/docs/cli#telemetry). Use that prefix on subsequent CLI commands too if desired.
 
 The installer copies complete skill directories into its managed locations and can link them for other hosts. A local-path install is a snapshot, not a live link to this checkout; rerun the same command after edits. Project installs also create `skills-lock.json`. Start a fresh agent session and use `$issue-workflow` in Codex or `/issue-workflow` in Claude Code.
 
 Existing same-name skills can be replaced, including a generic name such as `handoff`. Use the manual option below when you need to skip existing entries. Copying just `SKILL.md` is incomplete: references and license notices belong with the entrypoint.
 
-Tested `skills@1.5.25` on Node 22.20.0 in an isolated temporary project, targeting Codex and Claude Code together. All nine skills installed, all 32 source files matched byte-for-byte, and all nine Claude links resolved to the installed copies. This verifies installation output, not native client invocation. No global skills were installed. `@latest` tracks future CLI releases; this record names the version actually checked.
+Tested `skills@1.5.25` on Node 22.20.0 in an isolated temporary project, targeting Codex and Claude Code together. All nine skills installed, all 32 source files matched byte-for-byte, and all nine Claude links resolved to the installed copies. This verifies installation output, not native client invocation. No global skills were installed. `@latest` tracks future CLI releases; this record names the version actually checked. That 2026-09-08 record predates the research/artifact quartet; rerunning the smoke test against all thirteen skills is a documented follow-up.
 
 For GitHub-sourced installations, the CLI supports selected updates, for example:
 
@@ -58,6 +58,7 @@ DISABLE_TELEMETRY=1 npx skills@latest remove \
   issue-workflow investigate-issue shape-feature \
   design-user-flow wireframe-feature write-feature-spec \
   review-feature-spec publish-linear handoff \
+  scribble scribble-research source-synthesis tool-evaluation \
   -g
 ```
 
@@ -78,7 +79,7 @@ This option needs no Node runtime and keeps edits connected to the checkout. Clo
 skill_destination="$HOME/.agents/skills"
 skill_source="$PWD/skills"
 mkdir -p "$skill_destination"
-for skill in issue-workflow investigate-issue shape-feature design-user-flow wireframe-feature write-feature-spec review-feature-spec publish-linear handoff; do
+for skill in issue-workflow investigate-issue shape-feature design-user-flow wireframe-feature write-feature-spec review-feature-spec publish-linear handoff scribble scribble-research source-synthesis tool-evaluation; do
   if [ -e "$skill_destination/$skill" ] || [ -L "$skill_destination/$skill" ]; then
     printf 'Skipped existing skill: %s\n' "$skill"
   else

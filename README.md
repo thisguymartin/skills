@@ -1,10 +1,10 @@
 # thisguyskills
 
-My opinionated collection of coding-agent skills for deciding **what should be built**.
+My opinionated collection of coding-agent skills for deciding **what should be built** — and for researching, evaluating, and presenting the evidence behind it.
 
 Coding agents can implement a lot. They still build the wrong thing when a ticket is vague, nobody checks existing behavior, product choices get mixed with technical choices, UI flows stay implicit, specs contradict themselves, or the reasoning disappears between sessions.
 
-Thisguyskills turns an idea or issue into a reviewed product contract, a useful Linear issue, and a handoff another agent can actually resume. Intended repository: `thisguymartin/skills`. **Issuecraft** is the optional artifact layer under `.issuecraft/` in the product workspace.
+Thisguyskills turns an idea or issue into a reviewed product contract, a useful Linear issue, and a handoff another agent can actually resume. This repository lives at [`thisguymartin/skills`](https://github.com/thisguymartin/skills). **Issuecraft** is the optional artifact layer under `.issuecraft/` in the product workspace.
 
 ```text
 Issue / Idea
@@ -30,7 +30,9 @@ Ask your agent to use `issue-workflow`:
 
 Use a focused skill directly when you know what you need. Investigation can end with “already fixed,” “configuration issue,” or “no change needed.” An already-decided feature can go straight to synthesis. Missing product decisions leave a blocked draft; they do not become guessed requirements.
 
-## Nine skills, clear responsibilities
+## Thirteen skills, clear responsibilities
+
+### Feature shaping
 
 | Skill | Owns |
 | --- | --- |
@@ -43,6 +45,15 @@ Use a focused skill directly when you know what you need. Investigation can end 
 | [review-feature-spec](skills/review-feature-spec/SKILL.md) | Contradictions, omissions, unsupported assumptions, and readiness |
 | [publish-linear](skills/publish-linear/SKILL.md) | Issue drafts, respectful enrichment, vertical slices, verified publication |
 | [handoff](skills/handoff/SKILL.md) | Durable reading map and exact cold-start continuation |
+
+### Research and artifacts
+
+| Skill | Owns |
+| --- | --- |
+| [scribble](skills/scribble/SKILL.md) | Single-file HTML artifacts when Markdown is too flat: comparisons, walkthroughs, plans, decks, reports, throwaway tools |
+| [scribble-research](skills/scribble-research/SKILL.md) | Sourced discovery and visual research reports for repos, markets, and technical topics |
+| [source-synthesis](skills/source-synthesis/SKILL.md) | Combining provided sources into sourced summaries, decision memos, and planning handoffs |
+| [tool-evaluation](skills/tool-evaluation/SKILL.md) | Library/API/SaaS comparison: maintenance health, license, adoption, cost, and stack fit |
 
 Small entrypoints load their own references only when needed. Each skill is independently useful. The router composes them; there are no mandatory artifact bundles or extra orchestration services.
 
@@ -62,15 +73,21 @@ Pstack retains architecture, implementation, code changes, tests, real-applicati
 
 Keep Pstack installed and configured through its [own native installation workflow](https://github.com/ericlitman/open-pstack#install). Thisguyskills does not change that setup.
 
+## Research and artifact skills
+
+The four research and artifact skills were migrated from the retired `thisguymartin/scribble` repository. They keep scribble's local-first source policy: local codebase, git history, and user-provided files are the default sources, and web or external-system lookups happen only on explicit opt-in. Output is a single self-contained HTML file when layout, visuals, or shareability beat Markdown.
+
+The quartet shares reference material through `scribble-research/references/artifact-patterns.md`, so install the four together; a selective install that omits `scribble-research` leaves that shared checklist unresolved (see [compatibility and installation](docs/compatibility.md)). The optional [caveman](https://github.com/JuliusBrussee/caveman) skill is an external companion these skills can use for terse handoffs and artifact copy; they work without it.
+
 ## Install and use
 
-Once this repository is published at `thisguymartin/skills`, install all nine skills for **Codex and Claude Code** from anywhere:
+This repository is live at `thisguymartin/skills`. Install all thirteen skills for **Codex and Claude Code** from anywhere:
 
 ```bash
 DISABLE_TELEMETRY=1 npx skills@latest add https://github.com/thisguymartin/skills -g -a codex claude-code -s '*'
 ```
 
-Before publication, run from this checkout's root instead:
+From a local checkout, run from its root instead:
 
 ```bash
 DISABLE_TELEMETRY=1 npx skills@latest add . -g -a codex claude-code -s '*'
@@ -78,17 +95,18 @@ DISABLE_TELEMETRY=1 npx skills@latest add . -g -a codex claude-code -s '*'
 
 This uses the existing [Skills CLI](https://github.com/vercel-labs/skills). Its current release requires **Node 22.20+** to install; using the skills afterward needs no Node runtime. `-g` makes them available across projects. To install for just one host, use `-a codex` or `-a claude-code`. The CLI installs the complete skill folders where each host discovers them. Start a fresh session and use `$issue-workflow` in Codex or `/issue-workflow` in Claude Code.
 
-The installer can replace same-name skills. See [compatibility and installation](docs/compatibility.md) for selected skills, project installs, updates, and a manual option that skips existing entries. A temporary project install verified all nine skills and their bundled references/notices; native client invocation remains untested.
+The installer can replace same-name skills. See [compatibility and installation](docs/compatibility.md) for selected skills, project installs, updates, and a manual option that skips existing entries. A temporary project install verified the original nine skills and their bundled references/notices (2026-09-08 record, predating the research/artifact quartet); native client invocation remains untested.
 
 ### Remove
 
-Remove these nine skill names from all personal agent installations, including Codex and Claude Code:
+Remove these thirteen skill names from all personal agent installations, including Codex and Claude Code:
 
 ```bash
 DISABLE_TELEMETRY=1 npx skills@latest remove \
   issue-workflow investigate-issue shape-feature \
   design-user-flow wireframe-feature write-feature-spec \
   review-feature-spec publish-linear handoff \
+  scribble scribble-research source-synthesis tool-evaluation \
   -g
 ```
 
@@ -132,6 +150,6 @@ Upstream tools use temporary Git clones and compare configured source/dependency
 | [Builder.io Skills](https://github.com/BuilderIO/skills) | **Conceptual inspiration:** UI plans should be visually reviewable |
 | [Open Pstack](https://github.com/ericlitman/open-pstack) | **External integration:** native technical execution after shaping |
 
-Exact research revisions, verified paths, wrapper dependencies, licensing notes, and intentional changes are in [UPSTREAMS.md](UPSTREAMS.md) and [upstreams/manifest.json](upstreams/manifest.json). Locally authored investigation, user-flow, and spec-review skills complete the product workflow. Adapted material is credited and carries its upstream notice.
+Exact research revisions, verified paths, wrapper dependencies, licensing notes, and intentional changes are in [UPSTREAMS.md](UPSTREAMS.md) and [upstreams/manifest.json](upstreams/manifest.json). Locally authored investigation, user-flow, and spec-review skills complete the product workflow, and the research/artifact quartet (`scribble`, `scribble-research`, `source-synthesis`, `tool-evaluation`) is locally authored work migrated from the scribble repository. Adapted material is credited and carries its upstream notice.
 
 [MIT](LICENSE), with required notices in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and the adapted skills' bundled license files.
