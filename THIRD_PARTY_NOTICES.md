@@ -14,8 +14,10 @@ yaak-query adapts Yaak's official use-yaak skill from mountain-loop/yaak at 7f30
 
 Anthropic's web-artifacts-builder at 683bc88e56f3e09ba94f7055977f3d3aa499f202 was studied as output/design inspiration. Its skill-local terms are Apache-2.0. No instructions, scripts, dependency templates, or code from it are redistributed in plan-artifact.
 
-## Retained local Excalidraw
+The pr-automation prose and templates are original work under this repository's MIT notice. Humanizer is an optional installed skill, not bundled material.
 
-The existing Excalidraw folder/launcher is retained from the user's checkout, sourced from sibipro/bowstaff-skills. No upstream license notice was found in the inspected tree. This collection's MIT license does not assign a license to that retained material. [Provenance and inspection boundary](docs/upstreams.md) explain the local retention and unresolved redistribution status.
+## Excalidraw
+
+The Excalidraw folder and launcher are retained local material. This collection's MIT license does not assign a license to that material.
 
 Earlier adapted skills were removed in this revision. They remain only in Git history and the pre-change local backup; their notices are not evidence for the new collection.
