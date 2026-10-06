@@ -1,0 +1,44 @@
+{
+  "diagrams": [
+    {
+      "id": "today",
+      "title": "Today on main",
+      "W": 1060,
+      "H": 330,
+      "nodes": [
+        { "id": "web", "x": 40, "y": 40, "w": 200, "h": 100, "title": "Web app", "lines": ["one browser, one person", "builds the cart"], "state": "current" },
+        { "id": "api", "x": 400, "y": 20, "w": 240, "h": 90, "title": "pricing API", "lines": ["cart in, totals out", "writes nothing"], "state": "current" },
+        { "id": "order", "x": 790, "y": 150, "w": 240, "h": 96, "title": "Order", "lines": ["line items only"], "state": "current" },
+        { "id": "ls", "x": 40, "y": 210, "w": 200, "h": 96, "title": "localStorage", "lines": ["the whole cart"], "state": "current" },
+        { "id": "other", "x": 400, "y": 210, "w": 240, "h": 96, "title": "Second device", "lines": ["sees an empty cart"], "state": "fail" }
+      ],
+      "edges": [
+        { "from": "web", "to": "api", "label": "cart", "state": "current", "fromSide": "r", "toSide": "l", "fromOffset": -20, "labelDy": -14 },
+        { "from": "web", "to": "order", "label": "checkout: line items", "state": "current", "fromSide": "r", "toSide": "l", "fromOffset": 25 },
+        { "from": "web", "to": "ls", "label": "save cart", "state": "current", "labelDx": 60 },
+        { "from": "other", "to": "ls", "label": "can't read it", "state": "fail" }
+      ],
+      "notes": [{ "x": 910, "y": 274, "text": "cart is gone after checkout", "state": "fail" }]
+    },
+    {
+      "id": "proposed",
+      "title": "Proposed: save and reopen",
+      "W": 1060,
+      "H": 340,
+      "zones": [{ "x": 640, "y": 40, "w": 400, "h": 280, "label": "carts table · pk = ACCOUNT#<accountId>" }],
+      "nodes": [
+        { "id": "web", "x": 20, "y": 80, "w": 200, "h": 100, "title": "Web app", "lines": ["edit cart"], "state": "current" },
+        { "id": "save", "x": 330, "y": 80, "w": 230, "h": 100, "title": "saveCart", "lines": ["checks expectedRevision"], "state": "new" },
+        { "id": "row", "x": 680, "y": 80, "w": 320, "h": 100, "title": "Cart row", "lines": ["CART#<cartId>", "revision 3 → 4"], "state": "new" },
+        { "id": "snap", "x": 680, "y": 220, "w": 320, "h": 86, "title": "Checkout snapshot", "lines": ["frozen per order"], "state": "built" },
+        { "id": "stale", "x": 330, "y": 230, "w": 230, "h": 90, "title": "STALE_CART", "lines": ["someone saved first"], "state": "fail" }
+      ],
+      "edges": [
+        { "from": "web", "to": "save", "label": "cart\n+ rev 3", "state": "new" },
+        { "from": "save", "to": "row", "label": "put if rev\nmatches", "state": "new" },
+        { "from": "save", "to": "stale", "label": "revision ≠ 3", "state": "fail", "labelDx": 56 },
+        { "from": "row", "to": "snap", "label": "never rewrites", "state": "rule", "labelDx": 70 }
+      ]
+    }
+  ]
+}
