@@ -19,16 +19,18 @@ Each skill works on its own. The arrows are useful combinations, not required de
 
 ## Install the skills
 
+Use `skills@latest` to run the Skills CLI. This repo's npm package is also named `skills`, so plain `npx skills` from this checkout can resolve to the local package and fail with `could not determine executable to run`.
+
 From this checkout, including changes that have not been pushed:
 
 ```bash
-npx skills add . -a claude-code codex --skill project-research gather-context plan-artifact session-history cloud-investigate notion-brain yaak-query dynomatic-query pr-automation excalidraw
+npx skills@latest add . -a claude-code codex --skill project-research gather-context plan-artifact session-history cloud-investigate notion-brain yaak-query dynomatic-query pr-automation excalidraw
 ```
 
 Add `-g` for a global install. From GitHub, after these changes are published:
 
 ```bash
-npx skills add thisguymartin/skills -g -a claude-code codex --skill project-research gather-context plan-artifact session-history cloud-investigate notion-brain yaak-query dynomatic-query pr-automation excalidraw
+npx skills@latest add thisguymartin/skills -g -a claude-code codex --skill project-research gather-context plan-artifact session-history cloud-investigate notion-brain yaak-query dynomatic-query pr-automation excalidraw
 ```
 
 | Skill | Individual install selector |
