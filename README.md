@@ -1,155 +1,242 @@
 # thisguyskills
 
-My opinionated collection of coding-agent skills for deciding **what should be built** — and for researching, evaluating, and presenting the evidence behind it.
-
-Coding agents can implement a lot. They still build the wrong thing when a ticket is vague, nobody checks existing behavior, product choices get mixed with technical choices, UI flows stay implicit, specs contradict themselves, or the reasoning disappears between sessions.
-
-Thisguyskills turns an idea or issue into a reviewed product contract, a useful Linear issue, and a handoff another agent can actually resume. This repository lives at [`thisguymartin/skills`](https://github.com/thisguymartin/skills). **Issuecraft** is the optional artifact layer under `.issuecraft/` in the product workspace.
+My research and PR toolkit for coding agents. Understand a project, pull context from the tools I use, explain it with diagrams, turn it into an HTML plan, save useful work in Martin's Brain in Notion, and prepare readable PRs when requested.
 
 ```text
-Issue / Idea
-    ↓
-Investigate -> Shape -> Flow -> Wireframe (when UI matters)
-    ↓
-Spec -> Review -> Linear -> Handoff
-    ↓
-Native Open Pstack
-    ↓
-Build / Verify / Review / PR
+Repo + GitHub + Linear + Notion + Drive + Slack + cloud evidence
+  -> gather-context -> project-research -> plan-artifact
+Research + plan + artifact -> notion-brain save -> one Martin's Brain record
+Martin's Brain -> notion-brain recall -> context for the next plan
+Past Claude/Codex discussions -> session-history -> relevant decisions
+Saved API requests -> yaak-query -> endpoint evidence
+A diff or service -> security-scan -> confirmed findings + fixes
+DynamoDB tables -> dynomatic-query -> bounded data evidence
+A diagram I want to annotate -> excalidraw
+Code change -> pr-automation -> create or update one readable PR
 ```
 
-## Start anywhere
+Each skill works on its own. The arrows are useful combinations, not required dependencies. Existing artifact builders and artifact-upload still work alongside these skills. Research ends at an explanation or plan unless the request includes saving to Notion. PR delivery runs when requested; description edits and local previews have narrower scopes. Implementation and public publishing need their own authorization.
 
-Ask your agent to use `issue-workflow`:
+## Install the skills
 
-> We should make saved reports easier to understand. Investigate what happens today and shape the smallest useful change.
-
-> Take ENG-123 and fully shape it before we give it to Pstack.
-
-> Turn this discussion into an implementation-ready Linear issue. The behavior is already decided.
-
-Use a focused skill directly when you know what you need. Investigation can end with “already fixed,” “configuration issue,” or “no change needed.” An already-decided feature can go straight to synthesis. Missing product decisions leave a blocked draft; they do not become guessed requirements.
-
-## Thirteen skills, clear responsibilities
-
-### Feature shaping
-
-| Skill | Owns |
-| --- | --- |
-| [issue-workflow](skills/issue-workflow/SKILL.md) | Starting-point detection and routing through feature preparation |
-| [investigate-issue](skills/investigate-issue/SKILL.md) | Current behavior, code paths, evidence, domain language, related work |
-| [shape-feature](skills/shape-feature/SKILL.md) | Product decisions, scope, assumptions, and consequential open questions |
-| [design-user-flow](skills/design-user-flow/SKILL.md) | User journeys, alternate paths, state coverage, recovery |
-| [wireframe-feature](skills/wireframe-feature/SKILL.md) | Reviewable UI hierarchy and interactions; low fidelity by default |
-| [write-feature-spec](skills/write-feature-spec/SKILL.md) | Durable product intent, requirements, and observable acceptance criteria |
-| [review-feature-spec](skills/review-feature-spec/SKILL.md) | Contradictions, omissions, unsupported assumptions, and readiness |
-| [publish-linear](skills/publish-linear/SKILL.md) | Issue drafts, respectful enrichment, vertical slices, verified publication |
-| [handoff](skills/handoff/SKILL.md) | Durable reading map and exact cold-start continuation |
-
-### Research and artifacts
-
-| Skill | Owns |
-| --- | --- |
-| [scribble](skills/scribble/SKILL.md) | Single-file HTML artifacts when Markdown is too flat: comparisons, walkthroughs, plans, decks, reports, throwaway tools |
-| [scribble-research](skills/scribble-research/SKILL.md) | Sourced discovery and visual research reports for repos, markets, and technical topics |
-| [source-synthesis](skills/source-synthesis/SKILL.md) | Combining provided sources into sourced summaries, decision memos, and planning handoffs |
-| [tool-evaluation](skills/tool-evaluation/SKILL.md) | Library/API/SaaS comparison: maintenance health, license, adoption, cost, and stack fit |
-
-Small entrypoints load their own references only when needed. Each skill is independently useful. The router composes them; there are no mandatory artifact bundles or extra orchestration services.
-
-## Product intent first
-
-Investigate factual questions before asking the user. Ask progressively for actual product decisions. Keep FACT, DECISION, ASSUMPTION, and OPEN QUESTION distinct. A saved report preserving a date-range strategy belongs in the spec. Whether it uses JSON or normalized tables usually belongs to implementation.
-
-Substantial features must pass a specification review. The gate checks behavior, flows, permissions, failures, scope, evidence, and requirement/criterion coverage. BLOCKING findings prevent an implementation-ready label. Material changes invalidate the old review. Visual controls cannot silently introduce behavior absent from the written contract.
-
-Linear is a first-class destination. Existing context survives enrichment; large features use demonstrable vertical slices. Publishing uses whatever real integration is available and only within the requested scope. Without access, the result is complete ready-to-paste content, clearly marked unpublished.
-
-## Relationship with Open Pstack
-
-This repository complements [Open Pstack](https://github.com/ericlitman/open-pstack). It does not vendor or fork Open Pstack. Feature shaping stops at an implementation-ready contract, after which native Pstack can own technical execution.
-
-Pstack retains architecture, implementation, code changes, tests, real-application verification, code review, CI, PR preparation, implementation-session recovery, and implementation orchestration. The handoff names **`pstack:poteto-mode`**, which performs native routing. There is no copied implementation stack or long manual skill chain.
-
-Keep Pstack installed and configured through its [own native installation workflow](https://github.com/ericlitman/open-pstack#install). Thisguyskills does not change that setup.
-
-## Research and artifact skills
-
-The four research and artifact skills were migrated from the retired `thisguymartin/scribble` repository. They keep scribble's local-first source policy: local codebase, git history, and user-provided files are the default sources, and web or external-system lookups happen only on explicit opt-in. Output is a single self-contained HTML file when layout, visuals, or shareability beat Markdown.
-
-The quartet shares reference material through `scribble-research/references/artifact-patterns.md`, so install the four together; a selective install that omits `scribble-research` leaves that shared checklist unresolved (see [compatibility and installation](docs/compatibility.md)). The optional [caveman](https://github.com/JuliusBrussee/caveman) skill is an external companion these skills can use for terse handoffs and artifact copy; they work without it.
-
-## Install and use
-
-This repository is live at `thisguymartin/skills`. Install all thirteen skills for **Codex and Claude Code** from anywhere:
+From this checkout, including changes that have not been pushed:
 
 ```bash
-DISABLE_TELEMETRY=1 npx skills@latest add https://github.com/thisguymartin/skills -g -a codex claude-code -s '*'
+npx skills add . -a claude-code codex --skill project-research gather-context plan-artifact session-history cloud-investigate notion-brain yaak-query dynomatic-query pr-automation excalidraw
 ```
 
-From a local checkout, run from its root instead:
+Add `-g` for a global install. From GitHub, after these changes are published:
 
 ```bash
-DISABLE_TELEMETRY=1 npx skills@latest add . -g -a codex claude-code -s '*'
+npx skills add thisguymartin/skills -g -a claude-code codex --skill project-research gather-context plan-artifact session-history cloud-investigate notion-brain yaak-query dynomatic-query pr-automation excalidraw
 ```
 
-This uses the existing [Skills CLI](https://github.com/vercel-labs/skills). Its current release requires **Node 22.20+** to install; using the skills afterward needs no Node runtime. `-g` makes them available across projects. To install for just one host, use `-a codex` or `-a claude-code`. The CLI installs the complete skill folders where each host discovers them. Start a fresh session and use `$issue-workflow` in Codex or `/issue-workflow` in Claude Code.
+| Skill | Individual install selector |
+|---|---|
+| [excalidraw](#excalidraw) | `--skill excalidraw` |
+| [project-research](#project-research) | `--skill project-research` |
+| [gather-context](#gather-context) | `--skill gather-context` |
+| [plan-artifact](#plan-artifact) | `--skill plan-artifact` |
+| [session-history](#session-history) | `--skill session-history` |
+| [cloud-investigate](#cloud-investigate) | `--skill cloud-investigate` |
+| [notion-brain](#notion-brain) | `--skill notion-brain` |
+| [yaak-query](#yaak-query) | `--skill yaak-query` |
+| [dynomatic-query](#dynomatic-query) | `--skill dynomatic-query` |
+| [security-scan](#security-scan) | `--skill security-scan` |
+| [pr-automation](#pr-automation) | `--skill pr-automation` |
 
-The installer can replace same-name skills. See [compatibility and installation](docs/compatibility.md) for selected skills, project installs, updates, and a manual option that skips existing entries. A temporary project install verified the original nine skills and their bundled references/notices (2026-09-08 record, predating the research/artifact quartet); native client invocation remains untested.
+These commands are documented, not run automatically. Installing this collection does not remove previously installed skills with old names; see [compatibility](docs/compatibility.md) for migration.
 
-### Remove
+## What I need installed
 
-Remove these thirteen skill names from all personal agent installations, including Codex and Claude Code:
+Use existing CLI tools first. Cloud investigation runs `aws` directly; saved endpoint queries run `yaak` directly; DynamoDB reads go through the Dynomatic app's MCP server. Optional scripts live inside the skill that uses them. `<skill-dir>` in examples means the installed skill folder (or its folder in this checkout).
+
+| Skill | Required for the task | Optional |
+|---|---|---|
+| project-research | Repo/files or accessible sources | `git`, `rg`, current-docs/web tools, connected MCPs, existing artifact skill |
+| gather-context | Access to the sources being researched | GitHub CLI (`gh`) + Node for its shortcut; Linear/Notion/Drive/Slack MCPs |
+| plan-artifact | Node 22.18+ for the bundled renderer, browser to view HTML | Existing HTML/artifact builder; artifact-upload when sharing is requested |
+| session-history | Node 22.18+ and local Claude Code or Codex history | No MCP needed; `--root` supports a local export location |
+| cloud-investigate | AWS CLI v2 + authenticated profile for AWS reads | Vantage MCP for costs; Datadog/Mixpanel or other connected telemetry |
+| notion-brain | Connected Notion read tools; page-write access for saves/updates | Notion attachment tools for requested local artifacts; existing research/artifact outputs |
+| yaak-query | Yaak desktop collection + `@yaakapp/cli`; Node/npm to install the CLI | `jq` for local projections/redaction; existing Yaak MCP or official use-yaak skill |
+| security-scan | Repo checkout; `git`, `gh` for PR targets | Package audit tool (`pnpm audit`, `govulncheck`, `pip-audit`) for `--audit` |
+| dynomatic-query | Dynomatic desktop app running with its MCP server enabled, registered in Claude Code or Codex; authenticated AWS profile inside the app | Sample Mode for testing without AWS; excalidraw/plan-artifact for data-model diagrams |
+| pr-automation | `git`, authenticated GitHub CLI (`gh`), repository checks for code delivery | Existing Humanizer skill; Excalidraw skill + drawing/export tools for diagrams; GitHub attachment route |
+| excalidraw | Node, local Excalidraw MCP/canvas, `excalidraw-inbox` launcher | Tablet on the local network; setup needs git/pnpm |
+
+No npm dependencies are needed for the three new helpers. If you already use a Node version manager, keep using it. The scripts use native TypeScript support; [Node's docs](https://nodejs.org/en/learn/typescript/run-natively) explain the version requirement.
+
+On macOS with Homebrew, convenient installs are:
 
 ```bash
-DISABLE_TELEMETRY=1 npx skills@latest remove \
-  issue-workflow investigate-issue shape-feature \
-  design-user-flow wireframe-feature write-feature-spec \
-  review-feature-spec publish-linear handoff \
-  scribble scribble-research source-synthesis tool-evaluation \
-  -g
+brew install awscli gh node ripgrep
+aws --version
+node --version
+rg --version
+gh auth login
+gh auth status
 ```
 
-Removal matches names, not the source repository. Check the names before running; avoid `--all`, which selects other skills too. Omitting `-a` also removes shared copies across agents. Restricting removal to `-a codex claude-code` can leave shared skills discoverable in Codex when another agent uses the same directory. For project installs, run from the target project and omit `-g`. Start a fresh agent session afterward. No separate install or removal script is required.
+Install only what you need. AWS's supported installers are in the [AWS CLI v2 installation guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html); Homebrew is a convenience, not AWS's maintained installer. GitHub CLI's [official installation guide](https://cli.github.com/) covers other systems.
 
-## Workflows and artifacts
-
-- [Idea -> Linear](workflows/idea-to-linear.md)
-- [Existing Linear issue -> shaped feature](workflows/linear-to-feature.md)
-- [Investigation-only deep dive](workflows/issue-deep-dive.md)
-- [Feature -> native Pstack](workflows/feature-to-pstack.md)
-
-Use the [artifact convention](docs/artifacts.md) only as needed. A small spec can contain its own decisions and flow. A substantial UI feature might use separate spec, decisions, review, and wireframe files. Handoffs reference these durable artifacts instead of copying them. Local files must be made accessible before a remote agent can use them.
-
-For a complete synthetic example, start with [the saved-search handoff](examples/ui-feature/handoff.md). The [seven behavioral fixtures](examples/scenarios.md) cover vague ideas, existing issues, investigation only, backend work, settled decisions, oversized features, and cold starts. Synthetic issue IDs are never live publication targets.
-
-## Validate and maintain
-
-Repository tools need **Node 22.18+ and Git**, with no installed packages:
+For an AWS account using IAM Identity Center:
 
 ```bash
-node scripts/validate-skills.ts
-node --test scripts/tooling.test.ts
-node scripts/check-upstreams.ts
-node scripts/pull-upstream-reference.ts mattpocock-skills shape-feature
-# Optional: inspect the current upstream instead of the recorded pin
-node scripts/pull-upstream-reference.ts mattpocock-skills shape-feature --latest
+aws configure sso --profile research-dev
+aws sso login --profile research-dev
+aws sts get-caller-identity --profile research-dev
 ```
 
-Validation checks this repository's deliberately small frontmatter subset, names, file links, and provenance. It is not a general YAML parser or a test of agent judgment. [Validation notes](examples/validation.md) distinguish automated checks from behavioral walkthroughs and integration limitations.
+Use your existing organization profile if one is already configured. Compare the account returned by the last command with the intended account before resource reads. Do not paste access keys into prompts or files. [AWS SSO setup](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html).
 
-Upstream tools use temporary Git clones and compare configured source/dependency/license paths. Exports go to a fresh OS temporary review directory, never `skills/`. They do not execute upstream code, update pins, or overwrite adaptations. Review changes manually, then update the manifest, attribution, and tests together. Git calls time out after 30 seconds and failures exit nonzero; reported upstream changes alone exit zero.
+For Linear, Notion, Drive, Slack, Vantage, and other MCPs, connect them through your agent's normal connector setup. The skills discover available tools and can proceed with partial context; they do not install MCPs or change credentials. Plain CLI commands are welcome when they provide the evidence more directly.
 
-## Credits and license
+For Yaak, install the [desktop app](https://yaak.app/docs/getting-started/installation) if needed, then its official CLI:
 
-| Source | Relationship |
-| --- | --- |
-| [Matt Pocock Skills](https://github.com/mattpocock/skills) | **Adapted:** six skills draw from routing, grilling/domain modeling, prototype, spec synthesis, ticket slicing, and handoff instructions |
-| [GitHub Spec Kit](https://github.com/github/spec-kit) | **Conceptual inspiration:** requirements quality gates, consistency and coverage checks |
-| [Anthropic Knowledge Work Plugins](https://github.com/anthropics/knowledge-work-plugins) | **Conceptual inspiration:** problem, actors, goals/non-goals, metrics, and scope management |
-| [Builder.io Skills](https://github.com/BuilderIO/skills) | **Conceptual inspiration:** UI plans should be visually reviewable |
-| [Open Pstack](https://github.com/ericlitman/open-pstack) | **External integration:** native technical execution after shaping |
+```bash
+npm install -g @yaakapp/cli
+yaak --version
+yaak workspace list
+```
 
-Exact research revisions, verified paths, wrapper dependencies, licensing notes, and intentional changes are in [UPSTREAMS.md](UPSTREAMS.md) and [upstreams/manifest.json](upstreams/manifest.json). Locally authored investigation, user-flow, and spec-review skills complete the product workflow, and the research/artifact quartet (`scribble`, `scribble-research`, `source-synthesis`, `tool-evaluation`) is locally authored work migrated from the scribble repository. Adapted material is credited and carries its upstream notice.
+Optional on macOS: `brew install jq` for local JSON projections. Examples were checked with CLI 2026.8.1; use installed `--help` when versions differ. The CLI automatically uses the app's local collection; no Yaak server or custom wrapper is needed. `yaak auth` is for plugin publishing; endpoint authentication comes from saved requests/environments. [Yaak CLI docs](https://yaak.app/docs/getting-started/cli-usage).
 
-[MIT](LICENSE), with required notices in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and the adapted skills' bundled license files.
+Yaak also ships a general skill through `yaak agent install`. That writes global agent skill directories and refreshes its own use-yaak skill. It is optional and separate from installing this collection; yaak-query adds the research/evidence workflow and does not replace Yaak's managed skill.
+
+## Skills
+
+### [excalidraw](./excalidraw/)
+
+The existing local canvas round trip: draw -> hand over -> read annotations -> update the diagram. Its launcher is preserved. The removed parallel-lanes companion is optional behavior now described in the entrypoint. See [canvas setup](excalidraw/INSTALL.md); the Send to Claude workflow needs the local branch and MCP configuration described there.
+
+> "draw this in excalidraw", "let me annotate it", "check the canvas"
+
+### [project-research](./project-research/)
+
+The main project/feature deep dive. Traces the domain, code and context, explains current behavior, compares proposed changes, and creates a detailed HTML brief with flows, examples, evidence, tradeoffs, and a plan. Keeps technical depth available for engineers while making the main explanation readable for product and leadership.
+
+> "research this project and explain how it works", "research this feature before we build it", "make a detailed visual research brief"
+
+### [gather-context](./gather-context/)
+
+Pulls relevant context from GitHub, Linear, Notion, Drive, Slack, local files, and other available MCPs. Fetches actual sources, reconciles contradictions, and records dates and access gaps. Its GitHub shortcut calls `gh` directly.
+
+> "pull the context from Linear and Slack", "research this across Notion, Drive and GitHub", "collect the evidence for this decision"
+
+```bash
+node gather-context/scripts/github-evidence.ts --repo owner/repo --pr 123 --dry-run
+```
+
+### [plan-artifact](./plan-artifact/)
+
+Turns evidence and a plan into a standalone HTML explanation. The included renderer produces offline SVG diagrams, source links, expandable detail, alternatives, and steps with completion checks. It complements your existing artifact skill and upload workflow.
+
+> "turn this research into an HTML plan", "make the current and proposed flows visual", "create a readable explanation I can share"
+
+```bash
+node plan-artifact/scripts/render-brief.ts --input docs/examples/research-brief.json --output /tmp/research-brief.html
+```
+
+Open the [rendered example](docs/examples/research-brief.html) or edit [research-brief.json](docs/examples/research-brief.json). The renderer refuses to overwrite existing files; use a new filename for a revision.
+
+### [session-history](./session-history/)
+
+Searches local Claude Code and Codex discussions to recover useful decisions and workflow patterns. Defaults to bounded user prompts; full user/assistant text requires an exact session ID. It does not access claude.ai web history or export entire archives.
+
+> "look at my past Claude discussions", "what did we decide last time?", "find useful workflows from my previous sessions"
+
+```bash
+node session-history/scripts/search-history.ts --provider claude --query "research artifact" --limit 10
+```
+
+### [cloud-investigate](./cloud-investigate/)
+
+Traces cloud events and cost questions using AWS CLI, Vantage and telemetry tools. The skill instructs the agent to confirm account/region, then run native `aws` commands for SQS metadata or a bounded CloudWatch log window. The log example displays event metadata and pagination tokens; raw message bodies stay local for redaction. Install AWS CLI v2 and authenticate a profile; this skill needs no Node helper.
+
+> "investigate this SQS event path", "fetch the worker logs with AWS CLI", "research this cost increase in Vantage"
+
+```bash
+aws sts get-caller-identity --profile research-dev --region us-west-2 --output json --no-cli-pager
+```
+
+After checking the returned account, use the [SQS and CloudWatch commands](cloud-investigate/aws-and-costs.md). The example targets are synthetic; replace them with the confirmed resources.
+
+`receive-message` changes visibility/receive counts; message sampling is a separate authorized action. Queue metadata and logs are the normal investigation path. [AWS receive behavior](https://docs.aws.amazon.com/cli/latest/reference/sqs/receive-message.html).
+
+### [yaak-query](./yaak-query/)
+
+Finds saved requests, resolves the intended environment, queries an HTTP/GraphQL endpoint with native Yaak CLI, and explains the response as research evidence. Checks fresh response IDs, HTTP/application errors and pagination; keeps raw payloads local. It can create or adjust saved queries when that is part of the request.
+
+> "use the endpoint I already have in Yaak", "query this API through Yaak", "check the response history", "save this query in my Yaak workspace"
+
+```bash
+yaak workspace list
+yaak request list wk_synthetic
+yaak environment list wk_synthetic
+```
+
+Use IDs returned by discovery, then follow the [native query commands](yaak-query/commands.md). A whole workspace send can execute unrelated mutations; discovery lists requests without sending them. No helper script is included.
+
+### [dynomatic-query](./dynomatic-query/)
+
+Answers DynamoDB data questions through the Dynomatic desktop app's MCP server: which tables exist, how a single-table model is keyed, what an item actually contains, why data disagrees with the UI. Classifies prod vs non-prod first, prefers key reads over scans, bounds every page, and redacts item payloads before they leave the machine. Read-only; writes are a separate handoff.
+
+> "what's in this DynamoDB table", "why does this order look wrong in Dynamo", "show me the data model for this table", "set up dynomatic mcp in codex"
+
+```bash
+claude mcp add dynomatic -- /Applications/Dynomatic.app/Contents/MacOS/dynomatic mcp
+codex mcp add dynomatic -- /Applications/Dynomatic.app/Contents/MacOS/dynomatic mcp
+```
+
+The app must be running with Settings -> MCP Server enabled. [tools.md](dynomatic-query/tools.md) lists the read-only, gated, and write tool groups and the bounded read pattern. Checked against Dynomatic 1.2.0; live tool schemas win.
+
+### [pr-automation](./pr-automation/)
+
+Creates or updates the current branch's PR, rewrites a named PR description, or prepares a local preview. Keeps the body short: what changed and why, a few behavior bullets, up to three critical-file review notes, and actual validation. Uses an installed Humanizer skill when available and Excalidraw for flows that need a diagram. Description-only updates do not commit or push; delivery stages scoped work and preserves manual PR notes.
+
+> "create a PR", "push these changes and update the PR", "rewrite this PR description", "draft a PR description with an Excalidraw flow"
+
+```text
+Use pr-automation to create or update this PR. Base: develop.
+Reviewers: alice. Diagram: auto. Keep it short.
+```
+
+See the [description template and examples](pr-automation/description.md) and [diagram workflow](pr-automation/diagrams.md). Use `diagram: always` to request a diagram or `diagram: off` to skip it. Existing Humanizer/Excalidraw tools are discovered, not installed. Missing diagram access is reported explicitly.
+
+### [security-scan](./security-scan/)
+
+Security review of a PR, diff, file, directory, or whole service in any stack. Detects server vs browser surface from the files, traces every entry point's auth chain, and reports only findings confirmed by reading the code: authz on the wrong resource, permitted-id lists ignored, identity dropped in child containers, unguarded reference resolvers, search indices escaping authz, stale identity claims, cached personalized responses, public build-time secrets. Every finding gets severity, OWASP code, the corroborating signal, impact, and a code fix in about 120 words. Read-only.
+
+> "security review this PR", "audit this service for vulnerabilities", "is this safe to ship", "look for auth gaps in this diff", "check for XSS and data exposure"
+
+```bash
+gh pr diff 123
+git diff main...HEAD
+```
+
+[backend.md](security-scan/backend.md) covers handlers, RPC, GraphQL federation, events, IaC, and integrations including LLM tool access. [frontend.md](security-scan/frontend.md) covers XSS sinks, middleware matchers, server actions, client over-serialization, caching leaks, and framework config. Both load only when the target contains that surface.
+
+### [notion-brain](./notion-brain/)
+
+Saves research, plans, cloud/cost evidence, and artifacts as one organized record in Martin's Brain. Reads and summarizes saved decisions and open questions for later planning, or updates a named entry with dated evidence. Uses the live database fields and existing tags; no new database or automatic capture. Local artifacts can be attached directly to Notion when its upload tools are available.
+
+> "save this research and artifact to my brain", "pull prior context from Martin's Brain before planning", "update this entry with the new findings"
+
+```text
+cloud-investigate + gather-context -> plan-artifact -> notion-brain save
+notion-brain recall -> project-research -> a plan grounded in prior decisions
+```
+
+See [chained prompts and failure behavior](docs/notion-brain-workflow.md). Asking to preview a record stays local; asking to save it authorizes one Notion record. Skill creation and installation do not create live records.
+
+## Check the repo
+
+```bash
+npm run check
+npm test
+```
+
+[Scenarios](docs/examples/scenarios.md) cover expected agent behavior, including PR scope, repeated updates, preserved notes, and diagram gaps; automated checks cover packaging, renderer, history filters, GitHub CLI argument safety, and provenance tooling. AWS and PR command examples are checked against official docs; PR delivery and attachment behavior still need live usage. Synthetic fixtures only; no live AWS, Vantage, Linear, Notion, Slack, or GitHub writes are used for tests.
+
+See [upstream research](docs/upstreams.md), [compatibility](docs/compatibility.md), [verification and limits](docs/verification.md), and [third-party notices](THIRD_PARTY_NOTICES.md). Original skills/scripts are [MIT](LICENSE); adaptations retain Notion's and Yaak's MIT notices. Excalidraw is retained local material with its source/license status documented separately.

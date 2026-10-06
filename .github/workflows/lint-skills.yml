@@ -1,0 +1,15 @@
+name: Lint Skills
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate-frontmatter:
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate SKILL.md frontmatter
+        run: python3 .github/scripts/validate_skills.py

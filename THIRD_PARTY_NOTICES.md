@@ -1,33 +1,23 @@
 # Third-party notices
 
-Six skills materially adapt Matt Pocock's MIT-licensed instructions: `issue-workflow`, `shape-feature`, `wireframe-feature`, `write-feature-spec`, `publish-linear`, and `handoff`. Their bundled `LICENSE.txt` files preserve the upstream notice when a skill is distributed separately. The source mapping and modification descriptions are in [UPSTREAMS.md](UPSTREAMS.md).
+Original research skills, helper scripts, tests and documentation: Copyright (c) 2026 Martin Patino, MIT, except as stated below.
 
-## Matt Pocock skills
+## Notion research adaptations
 
-Repository: https://github.com/mattpocock/skills
+project-research and gather-context adapt workflow guidance from Notion Labs' notion-research-documentation distributed in openai/skills at 49f948faa9258a0c61caceaf225e179651397431. Copyright 2025 Notion Labs, Inc.; MIT. The complete notice is bundled in each folder's LICENSE.txt. Changed the workflow to read multiple sources, preserve a local ledger, and create local explanations without automatic Notion writes or copied runtime configuration.
 
-MIT License
+## Yaak query adaptation
 
-Copyright (c) 2026 Matt Pocock
+yaak-query adapts Yaak's official use-yaak skill from mountain-loop/yaak at 7f302536168585be4603aea09491a78b75c57070. Copyright (c) 2024 Yaak; MIT. The complete notice is bundled in yaak-query/LICENSE.txt alongside this repository's notice. Narrowed the workflow to saved-endpoint research, local redaction, fresh-response evidence and requested edits; removed automatic installation/refresh and collection-wide execution defaults. No Yaak binary, implementation or wrapper is bundled.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+## Studied, not copied
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+Anthropic's web-artifacts-builder at 683bc88e56f3e09ba94f7055977f3d3aa499f202 was studied as output/design inspiration. Its skill-local terms are Apache-2.0. No instructions, scripts, dependency templates, or code from it are redistributed in plan-artifact.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+The pr-automation prose and templates are original work under this repository's MIT notice. Humanizer is an optional installed skill, not bundled material.
 
-## Studied sources, not redistributed
+## Excalidraw
 
-GitHub Spec Kit (MIT), Anthropic Knowledge Work Plugins (scoped Apache-2.0 license), and Builder.io Skills (MIT) informed independently written instructions. Their source text/code/templates are not redistributed here. Open Pstack is an external integration; none of its skills or supporting code is included. See the pinned license references and research caveat in [UPSTREAMS.md](UPSTREAMS.md). No affiliation or endorsement is implied.
+The Excalidraw folder and launcher are retained local material. This collection's MIT license does not assign a license to that material.
+
+Earlier adapted skills were removed in this revision. They remain only in Git history and the pre-change local backup; their notices are not evidence for the new collection.

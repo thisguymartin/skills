@@ -1,13 +1,15 @@
 {
-  "name": "thisguyskills",
+  "name": "skills",
   "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "Personal product-shaping skills for coding agents",
-  "engines": { "node": ">=22.18.0" },
+  "description": "Research, evidence gathering and visual planning skills for coding agents",
+  "engines": {
+    "node": ">=22.18.0"
+  },
   "scripts": {
-    "check": "node scripts/validate-skills.ts",
-    "test": "node --test scripts/tooling.test.ts",
-    "check:upstreams": "node scripts/check-upstreams.ts"
+    "check": "node .github/scripts/validate-skills.ts",
+    "test": "node --test .github/scripts/tooling.test.ts .github/scripts/runtime.test.ts",
+    "check:upstreams": "node .github/scripts/check-upstreams.ts"
   }
 }
