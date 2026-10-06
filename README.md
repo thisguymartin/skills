@@ -5,6 +5,7 @@ My research and PR toolkit for coding agents. Understand a project, pull context
 ```text
 Repo + GitHub + Linear + Notion + Drive + Slack + cloud evidence
   -> gather-context -> project-research -> plan-artifact
+Ticket + open questions + repos -> feature-plan -> answered plan with Excalidraw diagrams
 Research + plan + artifact -> notion-brain save -> one Martin's Brain record
 Martin's Brain -> notion-brain recall -> context for the next plan
 Past Claude/Codex discussions -> session-history -> relevant decisions
@@ -24,13 +25,13 @@ Use `skills@latest` to run the Skills CLI. This repo's npm package is also named
 From this checkout, including changes that have not been pushed:
 
 ```bash
-npx skills@latest add . -a claude-code codex --skill project-research gather-context plan-artifact session-history cloud-investigate notion-brain yaak-query dynomatic-query pr-automation excalidraw
+npx skills@latest add . -a claude-code codex --skill feature-plan project-research gather-context plan-artifact session-history cloud-investigate notion-brain yaak-query dynomatic-query pr-automation excalidraw
 ```
 
 Add `-g` for a global install. From GitHub, after these changes are published:
 
 ```bash
-npx skills@latest add thisguymartin/skills -g -a claude-code codex --skill project-research gather-context plan-artifact session-history cloud-investigate notion-brain yaak-query dynomatic-query pr-automation excalidraw
+npx skills@latest add thisguymartin/skills -g -a claude-code codex --skill feature-plan project-research gather-context plan-artifact session-history cloud-investigate notion-brain yaak-query dynomatic-query pr-automation excalidraw
 ```
 
 | Skill | Individual install selector |
@@ -39,6 +40,7 @@ npx skills@latest add thisguymartin/skills -g -a claude-code codex --skill proje
 | [project-research](#project-research) | `--skill project-research` |
 | [gather-context](#gather-context) | `--skill gather-context` |
 | [plan-artifact](#plan-artifact) | `--skill plan-artifact` |
+| [feature-plan](#feature-plan) | `--skill feature-plan` |
 | [session-history](#session-history) | `--skill session-history` |
 | [cloud-investigate](#cloud-investigate) | `--skill cloud-investigate` |
 | [notion-brain](#notion-brain) | `--skill notion-brain` |
@@ -58,6 +60,7 @@ Use existing CLI tools first. Cloud investigation runs `aws` directly; saved end
 | project-research | Repo/files or accessible sources | `git`, `rg`, current-docs/web tools, connected MCPs, existing artifact skill |
 | gather-context | Access to the sources being researched | GitHub CLI (`gh`) + Node for its shortcut; Linear/Notion/Drive/Slack MCPs |
 | plan-artifact | Node 22.18+ for the bundled renderer, browser to view HTML | Existing HTML/artifact builder; artifact-upload when sharing is requested |
+| feature-plan | Node 22.18+ for the diagram script, access to the ticket and repos | gather-context, project-research, plan-artifact, excalidraw canvas, headless Chrome for the visual check, humanizer for the team message |
 | session-history | Node 22.18+ and local Claude Code or Codex history | No MCP needed; `--root` supports a local export location |
 | cloud-investigate | AWS CLI v2 + authenticated profile for AWS reads | Vantage MCP for costs; Datadog/Mixpanel or other connected telemetry |
 | notion-brain | Connected Notion read tools; page-write access for saves/updates | Notion attachment tools for requested local artifacts; existing research/artifact outputs |
@@ -141,6 +144,16 @@ node plan-artifact/scripts/render-brief.ts --input docs/examples/research-brief.
 ```
 
 Open the [rendered example](docs/examples/research-brief.html) or edit [research-brief.json](docs/examples/research-brief.json). The renderer refuses to overwrite existing files; use a new filename for a revision.
+
+### [feature-plan](./feature-plan/)
+
+The whole chain for one request: a ticket, a rough idea, and the questions you half answered ("store it per property? S3 or Dynamo? edit later? one or many?"). Reads the ticket trail, finds branches and memos that already exist, reads the code in every repo, models the domain, then answers each question with a confidence and draws today, built-on-a-branch and proposed flows. One diagram spec renders the page SVG, `.excalidraw` files, and a push to the live canvas when one is running.
+
+> "here's the Linear issue, should we store this per property?", "research both repos and give me a visual plan", "plan this with excalidraw diagrams"
+
+```bash
+node feature-plan/scripts/diagrams.ts --spec feature-plan/examples/saved-carts.json --out /tmp/diagrams --no-canvas
+```
 
 ### [session-history](./session-history/)
 
