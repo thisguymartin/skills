@@ -1,0 +1,23 @@
+name: Lint Skills
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.18.0'
+      - name: Validate SKILL.md files
+        run: node .github/scripts/validate-skills.ts
+      - name: Test tooling and helpers
+        run: npm test

@@ -1,120 +1,51 @@
-# Compatibility and installation
+# Runtime and installation
 
-Checked 2026-09-08 against the [Agent Skills specification](https://agentskills.io/specification), [official Codex skill documentation](https://developers.openai.com/codex/skills/), [Claude Code skill documentation](https://code.claude.com/docs/en/skills), and [Skills CLI documentation](https://github.com/vercel-labs/skills). Confidence: high for the tested installer and documented local discovery; native invocation across both clients has not been smoke-tested here.
+## CLI-first behavior
 
-Every skill uses standard `name`, `description`, and `license` frontmatter plus Markdown and relative references. No host-specific hooks, model restrictions, tool allowlists, or mandatory MCP server names. The runtime chooses how to invoke skills and ask questions. Each entrypoint is useful on its own; the full router expects the other shaping capabilities to be installed. Similarly, the research/artifact quartet (`scribble`, `scribble-research`, `source-synthesis`, `tool-evaluation`) shares reference material through `scribble-research/references/artifact-patterns.md` — `scribble`, `source-synthesis`, and `tool-evaluation` point at it via a `../scribble-research/` sibling path, so a selective install that omits `scribble-research` leaves that shared checklist unresolved. Install the four together.
+Cloud investigation uses native `aws` commands and needs AWS CLI v2 plus an authenticated profile. It has no custom wrapper or Node requirement. The three bundled helpers are dependency-free TypeScript for Node 22.18+; the GitHub helper uses `gh` on PATH with argument arrays. Every helper supports --help; the GitHub helper supports --dry-run without calling `gh`. No tool installs, credential changes, MCP setup, or global skill installation happen as a side effect.
 
-| Host | Personal skills | Project skills | Explicit use |
-| --- | --- | --- | --- |
-| Codex | `~/.agents/skills/<name>/` | `.agents/skills/<name>/` | `$issue-workflow` or ask to use the named skill |
-| Claude Code | `~/.claude/skills/<name>/` | `.claude/skills/<name>/` | `/issue-workflow` or ask to use the named skill |
+Use a newer supported Node release if available; plain skill instructions work without Node, while bundled helpers require it. A browser is needed to view HTML. Native TypeScript availability is documented in [Node's guide](https://nodejs.org/en/learn/typescript/run-natively).
 
-Both documented local discovery mechanisms support symlinked skill directories. A root `skills/` checkout is the source tree; it is not automatically registered in an unrelated product repository. Some tools also support other or legacy locations; use the current host docs for those.
+Claude Code and Codex discover SKILL.md instructions. Invoke according to the host UI (for example /project-research in Claude or $project-research in Codex). Tool inventories differ: discover current schemas; never assume a hardcoded MCP tool name or a particular connector is available.
 
-## One-command install
+The repository has eight root skill folders. Supporting Markdown stays flat; only scripts/ and agents/ may be subdirectories inside a skill. General documentation/examples and fixtures live under docs/. Generated research files belong in the target task workspace, not in the installed collection.
 
-Use the existing Skills CLI with **Node 22.20+**, the minimum declared by the checked `skills@1.5.25` release. To install all thirteen skills for Codex and Claude Code from this repository's root:
+## Local installation and migration
 
-```bash
-DISABLE_TELEMETRY=1 npx skills@latest add . -g -a codex claude-code -s '*'
-```
+Install from `.` while reviewing unpublished changes. Installation changes skill directories and remains a separate user task. The upstream Skills CLI documents the flags in its [README](https://github.com/vercel-labs/skills).
 
-The repository is published at `thisguymartin/skills`. The equivalent command from any directory is:
+The previous thirteen skills and excalidraw-lanes have been replaced in this checkout. Existing global copies are not removed by adding the current collection. If you want to remove the old global collection, run this separately:
 
 ```bash
-DISABLE_TELEMETRY=1 npx skills@latest add https://github.com/thisguymartin/skills -g -a codex claude-code -s '*'
+npx skills remove issue-workflow investigate-issue shape-feature design-user-flow wireframe-feature write-feature-spec review-feature-spec publish-linear handoff scribble scribble-research source-synthesis tool-evaluation excalidraw-lanes -g
 ```
 
-| Want to install… | Change |
-| --- | --- |
-| Only for Codex | Use `-a codex` |
-| Only for Claude Code | Use `-a claude-code` |
-| Only selected skills | Replace `-s '*'` with names, such as `-s investigate-issue handoff` |
-| Into one product project | Run from that project's root, use the absolute path to this checkout or the published GitHub source, and omit `-g` |
-| Nothing yet; preview available skills | Run `npx skills@latest add . --list` from this checkout |
+Omit a host filter only when you intend to remove canonical shared copies as well. Do not remove unrelated installed skills. `artifact-upload` is external and remains separate.
 
-`-g` selects a personal install; `-s '*'` selects all thirteen skills. Target agents explicitly: `--all` also selects every agent supported by the installer. `DISABLE_TELEMETRY=1` opts out of the installer's [telemetry](https://www.skills.sh/docs/cli#telemetry). Use that prefix on subsequent CLI commands too if desired.
+## Excalidraw
 
-The installer copies complete skill directories into its managed locations and can link them for other hosts. A local-path install is a snapshot, not a live link to this checkout; rerun the same command after edits. Project installs also create `skills-lock.json`. Start a fresh agent session and use `$issue-workflow` in Codex or `/issue-workflow` in Claude Code.
+The existing launcher and local round trip are preserved. Read [INSTALL.md](../excalidraw/INSTALL.md) for the local MCP, launcher, branch and rebuild details. Its Send to Claude listener assumes Claude Code's session ID and Monitor capability. Codex may need an explicit session URL and host-specific listening workflow; do not claim that round trip has been verified in Codex. The new research/HTML skills do not depend on a live canvas.
 
-Existing same-name skills can be replaced, including a generic name such as `handoff`. Use the manual option below when you need to skip existing entries. Copying just `SKILL.md` is incomplete: references and license notices belong with the entrypoint.
+The source describes a session-derived port; hash-based selection can collide, so check the actual running canvas before sharing or editing. Canvas data and internal screenshots stay local unless the user requests sharing.
 
-Tested `skills@1.5.25` on Node 22.20.0 in an isolated temporary project, targeting Codex and Claude Code together. All nine skills installed, all 32 source files matched byte-for-byte, and all nine Claude links resolved to the installed copies. This verifies installation output, not native client invocation. No global skills were installed. `@latest` tracks future CLI releases; this record names the version actually checked. That 2026-09-08 record predates the research/artifact quartet; rerunning the smoke test against all thirteen skills is a documented follow-up.
+## Notion capture and recall
 
-For GitHub-sourced installations, the CLI supports selected updates, for example:
+notion-brain uses the host's existing Notion connection and discovers tools/access at runtime. No Node helper, REST token, new database, or connector setup is required. Saving/updating needs page-write access; read-only connections can still recall context or produce a local draft. Local artifact attachment requires a supported upload capability; an existing stable URL can be linked instead.
 
-```bash
-DISABLE_TELEMETRY=1 npx skills@latest update investigate-issue -g
-```
+Martin's Brain is the configured default, with its URL and a dated schema snapshot in the skill. Fetch the live schema before mapping properties, and read the connected enhanced-Markdown specification before content writes. A database's view ID is not its collection ID. A request to chain research -> artifact -> save authorizes that single capture; invoking research alone does not. Global installation remains a separate task. See [workflow prompts](notion-brain-workflow.md).
 
-That updates an installed skill from **this repository**. Reviewing and adapting changes from Matt Pocock and other sources remains a separate maintainer task using this repository's upstream tools.
+## Yaak
 
-## Remove installed skills
+yaak-query uses `@yaakapp/cli` directly and has no custom script. The CLI selects the desktop app's local collection unless `--data-dir` is supplied. Discovery and query examples were checked on 2026.8.1; inspect installed help before using newer flags. Request sends retain response history and may update cookies. HTTP was exercised locally; GraphQL uses its HTTP model but was not queried end to end. gRPC/WebSocket sends are unsupported in the checked CLI.
 
-For complete removal of this collection from all personal agent installations, including Codex and Claude Code, use the CLI's [named removal command](https://github.com/vercel-labs/skills#skills-remove):
+Yaak's separate `yaak agent install` writes a managed use-yaak skill into detected hosts and the shared agent skill directory. Keep custom research guidance in yaak-query so refreshing Yaak's skill does not overwrite it. Neither the CLI nor that official skill is installed globally by this repository's checks. The CLI's `auth` command is for plugin publishing; saved endpoint credentials remain local in Yaak.
 
-```bash
-DISABLE_TELEMETRY=1 npx skills@latest remove \
-  issue-workflow investigate-issue shape-feature \
-  design-user-flow wireframe-feature write-feature-spec \
-  review-feature-spec publish-linear handoff \
-  scribble scribble-research source-synthesis tool-evaluation \
-  -g
-```
+## History
 
-Removal matches the listed names, not a GitHub repository identity. Check the names before running, especially if a same-name skill now comes from another collection. The CLI prompts in a normal terminal but may skip confirmation when it detects an agent. Do not use `--all` or `-s '*'` to remove just this collection: those also select unrelated installed skills.
+Claude defaults to ~/.claude/history.jsonl. Scoped messages live under ~/.claude/projects when retained. Codex reads ~/.codex/sessions and uses session metadata to filter cwd/session. `--root` accepts the corresponding local provider directory. Neither mode logs into web chat history. An index match can exist without a retained conversation file.
 
-Omitting `-a` targets the named skills across all agents, allowing removal of their shared canonical directories. To request removal only from selected hosts, append `-a codex claude-code` or one host name. That can preserve shared copies when other detected agents use them. In the isolated test, selecting those two hosts removed Claude's links but retained `.agents/skills` files, which Codex can still discover. Use the complete-removal command when the intent is to uninstall this collection everywhere.
+Searches are bounded, include coverage metadata, and are not newest-first. Hidden reasoning and tool outputs are excluded. Keep output local and sanitize excerpts before including private context in shareable artifacts.
 
-For a project installation, run from that product project's root and omit `-g`. Start a fresh agent session afterward. The source checkout and its product artifacts are separate from CLI-managed installed copies.
+## Verification limits
 
-For manual development links created below, remove only the individual symlinks you created from the selected host's skill directory after checking their targets. Keep the source `skills/` tree. The CLI commands above cover CLI-managed installs; they are not a blanket cleanup of every possible manual setup.
-
-## Manual development links that skip existing entries
-
-This option needs no Node runtime and keeps edits connected to the checkout. Clone this repository wherever you keep tools. From its root, choose the destination for your host and run:
-
-```bash
-# Codex personal install. For Claude Code, use "$HOME/.claude/skills".
-skill_destination="$HOME/.agents/skills"
-skill_source="$PWD/skills"
-mkdir -p "$skill_destination"
-for skill in issue-workflow investigate-issue shape-feature design-user-flow wireframe-feature write-feature-spec review-feature-spec publish-linear handoff scribble scribble-research source-synthesis tool-evaluation; do
-  if [ -e "$skill_destination/$skill" ] || [ -L "$skill_destination/$skill" ]; then
-    printf 'Skipped existing skill: %s\n' "$skill"
-  else
-    ln -s "$skill_source/$skill" "$skill_destination/$skill"
-  fi
-done
-```
-
-For a project install, choose the target product repo's absolute `.agents/skills` or `.claude/skills` path. Start a fresh session and confirm the host lists the skills. Do not copy just `SKILL.md`: keep references and bundled license notices. Symlinks keep updates tied to the checkout; copying a whole skill is also portable but requires manual synchronization.
-
-Names such as `handoff` can collide with existing collections. The loop deliberately skips all existing entries, including broken symlinks. Resolve collisions consciously; invoke a specific source path when necessary instead of silently overriding another skill. Do not rename only the folder: the frontmatter name must match it. See the host docs for namespace and precedence behavior.
-
-## Native Codex plugin commands
-
-The checked Codex CLI, `0.153.4`, offers `codex plugin marketplace add` and `codex plugin add`; there is no `codex install` command. Those commands install marketplace plugins. This repository currently distributes standard skills through the Skills CLI or manual links, so it does not need a custom installer or plugin manifest. Pstack still uses its own native plugin workflow below.
-
-## Open Pstack remains native
-
-Use [Open Pstack's own installation workflow](https://github.com/ericlitman/open-pstack#install). This repository does not install or configure Pstack. At the pinned research revision its Codex plugin workflow is:
-
-```bash
-codex plugin marketplace add ericlitman/open-pstack --ref main
-codex plugin add pstack@open-pstack
-```
-
-Follow the upstream setup instructions for current model/subagent requirements and restart discovery as directed. The implementation starter is `Use pstack:poteto-mode.` In Claude Code the native slash form is `/pstack:poteto-mode`. No Pstack skill chain is reimplemented here.
-
-## Linear capability discovery
-
-Use the actual tools offered by the host. Read their schemas/help before fetching issues/comments/relations, searching related work, or writing issues. An exposed connector does not prove authenticated access or every supported mutation. Test reads within the actual task's scope.
-
-Missing access does not block drafting. `publish-linear` returns complete ready-to-paste content and states what could not be published. No guessed API or credential setup is required. User authorization determines whether to write; an investigation-only request stays read-only.
-
-## Research environment snapshot
-
-The initial workspace was empty, with no Git metadata or local instructions, README, license, or skill trees. Linear MCP tools and a named Linear MCP configuration were present; no live issue was read or written for this repository task. No Pstack installation/reference was found in the checked user skill roots, plugin cache names, installed-plugin/marketplace records, or Codex plugin configuration. This is an inspection result, not proof of absence from every possible installation location. Existing global tools were left unchanged.
-
-Skill usage itself needs no Node runtime. Repository validation/upstream maintenance tools use Node 22.18+ and Git; TypeScript runs through [Node's native type stripping](https://nodejs.org/docs/latest-v22.x/api/typescript.html) with no dependencies. Script execution was checked on Node 22.18.0 and Git 2.55.0. Type stripping executes the scripts; it does not perform static type checking.
+Tests use local synthetic JSONL, JSON and Git fixtures. GitHub CLI argument plans are exercised without network. AWS command examples are reviewed against official docs. Live credentials, MCP scopes, AWS permissions, Vantage results, canvas startup, and publication are not verified by these tests. A visual HTML inspection is recorded separately when performed.

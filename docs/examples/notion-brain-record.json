@@ -1,0 +1,22 @@
+{
+  "parent": {
+    "data_source_id": "00000000-0000-4000-8000-000000000001"
+  },
+  "allow_async": true,
+  "pages": [
+    {
+      "properties": {
+        "Name": "Synthetic worker cost review and retry plan",
+        "Type": "R&D",
+        "Status": "In progress",
+        "Summary": "Synthetic evidence suggests duplicate deliveries may explain some worker spend. The retry plan remains proposed; missing allocation and log coverage prevent a verified savings estimate.",
+        "Tags": "[\"Engineering\",\"Operations\",\"Reporting\"]",
+        "Source": "https://example.com/synthetic-cost-report",
+        "date:Research date:start": "2026-10-06",
+        "date:Research date:is_datetime": 0,
+        "Next step": "Confirm duplicate-delivery rate and cost allocation before choosing the retry change."
+      },
+      "content": "## Research question\nWhat explains the synthetic worker cost increase, and would a retry change help?\n\n## Context\nSynthetic account alias research-dev; region us-west-2; Vantage workspace example; 2026-10-01T00:00:00Z to 2026-10-06T00:00:00Z; actual USD costs, daily granularity. Billing freshness and service allocation are incomplete.\n\n## Findings\n- Confirmed in synthetic fixtures: duplicate deliveries appear in a bounded log sample. Source: [Synthetic event sample](https://example.com/synthetic-event-sample), observed 2026-10-05, checked 2026-10-06. One page has a continuation token, so coverage is incomplete.\n- Hypothesis, medium confidence: duplicate processing contributes to spend. [Synthetic cost report](https://example.com/synthetic-cost-report), observed 2026-10-05, checked 2026-10-06. Correlation alone does not establish attribution.\n\n## Options and tradeoffs\nKeep existing retries while measuring, or evaluate an idempotency guard after confirming the domain key. Savings are unverified.\n\n## Takeaway\nMeasure delivery duplication and allocation before committing to a change. No implementation decision has been accepted.\n\n## Proposed plan\n1. Confirm the event identity contract. Complete when repeated deliveries can be matched without customer payloads.\n2. Measure duplicate rate and attributable worker cost. Depends on step 1; complete when the date window and denominator match.\n3. Compare the smallest safe change against current behavior. Depends on step 2; complete when behavior and failure checks are defined.\n\n## Open questions\nWhat is the duplicate rate outside the sample? How much spend belongs to this worker?\n\n## Artifact\n[Synthetic HTML explanation](https://example.com/synthetic-cost-brief.html) shows current and proposed flows. This example URL is illustrative; no upload or live visual review occurred.\n\n## Sources\n- [Synthetic cost report](https://example.com/synthetic-cost-report): actual USD costs; source date 2026-10-05; checked 2026-10-06; freshness/allocation incomplete.\n- [Synthetic event sample](https://example.com/synthetic-event-sample): bounded UTC window; source date 2026-10-05; checked 2026-10-06; one page with continuation.\n\n## Next step\nConfirm duplicate-delivery rate and cost allocation before choosing the retry change.\n\n## Dated updates\nCapture ID: synthetic-cost-review-2026-10-06. This is a local synthetic fixture, not a live record."
+    }
+  ]
+}

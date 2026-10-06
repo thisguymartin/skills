@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "researchedOn": "2026-10-06",
+  "sources": [
+    {
+      "id": "openai-skills",
+      "repository": "https://github.com/openai/skills",
+      "revision": "49f948faa9258a0c61caceaf225e179651397431",
+      "license": "MIT (Notion Labs skill-local notice)",
+      "kind": "adapted",
+      "licenseFiles": [
+        "skills/.curated/notion-research-documentation/LICENSE.txt"
+      ],
+      "references": [],
+      "adaptations": [
+        {
+          "local": "gather-context",
+          "sources": [
+            "skills/.curated/notion-research-documentation/SKILL.md"
+          ],
+          "changes": "Multi-source, read-only research with local evidence/HTML output; no automatic Notion writes or copied runtime configuration."
+        },
+        {
+          "local": "project-research",
+          "sources": [
+            "skills/.curated/notion-research-documentation/SKILL.md"
+          ],
+          "changes": "Multi-source, read-only research with local evidence/HTML output; no automatic Notion writes or copied runtime configuration."
+        }
+      ]
+    },
+    {
+      "id": "anthropic-skills",
+      "repository": "https://github.com/anthropics/skills",
+      "revision": "683bc88e56f3e09ba94f7055977f3d3aa499f202",
+      "license": "Apache-2.0 (skill-local notice)",
+      "kind": "inspiration",
+      "licenseFiles": [
+        "skills/web-artifacts-builder/LICENSE.txt"
+      ],
+      "references": [
+        "skills/web-artifacts-builder/SKILL.md"
+      ],
+      "adaptations": []
+    },
+    {
+      "id": "yaak-cli",
+      "repository": "https://github.com/mountain-loop/yaak",
+      "revision": "7f302536168585be4603aea09491a78b75c57070",
+      "license": "MIT",
+      "kind": "adapted",
+      "licenseFiles": ["LICENSE"],
+      "references": [
+        "crates-cli/yaak-cli/src/commands/request.rs",
+        "crates-cli/yaak-cli/src/commands/send.rs",
+        "crates-cli/yaak-cli/src/commands/response.rs"
+      ],
+      "adaptations": [
+        {
+          "local": "yaak-query",
+          "sources": ["crates-cli/yaak-cli/skills/use-yaak/SKILL.md"],
+          "changes": "Narrowed to saved-endpoint research and scoped query evidence; no automatic CLI/skill installation, collection-wide sends, or saved-request edits. Added local redaction and fresh-response checks."
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+- Added notion-brain to save chained research, planning, and artifacts as one Martin's Brain record, recall sourced context, and update a named entry with dated findings. Included live schema routing, attachment/retry handling, draft mode, and synthetic behavior scenarios.
+- Added yaak-query for native CLI discovery, scoped saved-request queries, response evidence, and requested saved-query edits. Documented Yaak installation and retained the official skill's MIT notice.
+- Replaced the previous product-shaping/artifact collection with five independent research skills: project-research, gather-context, plan-artifact, session-history and cloud-investigate.
+- Preserved Excalidraw and its launcher; removed the parallel-lanes entrypoint and its sibling dependency.
+- Added helpers for GitHub reads, scoped local conversation searches, and dependency-free HTML/SVG brief rendering. AWS queue/log investigation uses native AWS CLI commands with an account check in the workflow.
+- Documented required CLI installs, authentication, MCP fallbacks, local installation and removal of older global copies.
+- Added pinned online research, retained/adapted license notices, synthetic scenarios and runtime tests. Updated repository guidance to the research toolkit scope without automatic Pstack invocation.
+- Unified validation and CI so flat layout, local links, packaging and helper behavior are checked together.
+
 ## 0.2.0 — 2026-09-25
 
 - Migrated the four research/artifact skills (`scribble`, `scribble-research`, `source-synthesis`, `tool-evaluation`) from the scribble repository, normalizing frontmatter to the `name`/`description`/`license` subset and dropping command shims and plugin manifests.

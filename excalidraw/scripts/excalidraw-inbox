@@ -1,0 +1,206 @@
+#!/usr/bin/env node
+import assert from 'node:assert'
+import { execFileSync, spawn } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { mkdirSync, openSync } from 'node:fs'
+import { homedir, hostname } from 'node:os'
+import { setTimeout as sleep } from 'node:timers/promises'
+
+const SESSION = process.env.CLAUDE_CODE_SESSION_ID
+const POLL_MS = 1000
+
+const sessionPort = () => {
+  assert(SESSION, 'CLAUDE_CODE_SESSION_ID is unset — run this from a Claude Code session or set EXPRESS_SERVER_URL')
+  return 20000 + (createHash('sha256').update(SESSION).digest().readUInt32BE(0) % 20000)
+}
+
+const CANVAS = process.env.EXPRESS_SERVER_URL ?? `http://127.0.0.1:${sessionPort()}`
+const LAN_URL = `http://${hostname().replace(/\.local$/, '')}.local:${new URL(CANVAS).port}`
+
+const api = async (path, init) => {
+  const res = await fetch(`${CANVAS}${path}`, init)
+  if (res.ok) return res.json()
+  assert.fail(`${init?.method ?? 'GET'} ${path} answered ${res.status}: ${await res.text()}`)
+}
+
+const running = async () => {
+  const res = await fetch(`${CANVAS}/health`).catch(() => null)
+  if (!res?.ok) return false
+  return (await res.json()).service === 'mcp-excalidraw-canvas'
+}
+
+const start = async () => {
+  if (await running()) return
+  const owner = process.env.CLAUDE_PID
+  assert(SESSION && owner, 'CLAUDE_CODE_SESSION_ID and CLAUDE_PID must be set — start the canvas from a Claude Code session')
+  const dir = `${homedir()}/mcp/excalidraw-data/sessions/${SESSION}`
+  mkdirSync(dir, { recursive: true })
+  const log = openSync(`${dir}/canvas.log`, 'a')
+  spawn(`${homedir()}/mcp/run_excalidraw_canvas.sh`, {
+    detached: true,
+    stdio: ['ignore', log, log],
+    env: { ...process.env, PORT: new URL(CANVAS).port, SAVE: `${dir}/scene.excalidraw`, OWNER_PID: owner },
+  }).unref()
+  for (let i = 0; i < 50 && !(await running()); i++) await sleep(200)
+  assert(await running(), `canvas did not come up at ${CANVAS} — see ${dir}/canvas.log`)
+}
+
+const stamp = name => Number(name.split('-').at(-1))
+
+const claudeSnapshots = async () =>
+  (await api('/api/snapshots')).snapshots
+    .map(s => s.name)
+    .filter(name => /^claude-(send|handoff)-\d+$/.test(name))
+    .sort((a, b) => stamp(a) - stamp(b))
+
+const elementsOf = async name => (await api(`/api/snapshots/${name}`)).snapshot.elements
+
+const textOf = (el, elements) =>
+  el.type === 'text' ? el.text : (el.label?.text ?? elements.find(e => e.containerId === el.id && !e.isDeleted)?.text ?? null)
+
+const labelOf = (id, elements) => {
+  const el = elements.find(e => e.id === id)
+  return (el && textOf(el, elements)) ?? id
+}
+
+const endpoint = (el, side) => el[`${side}Binding`]?.elementId ?? el[side]?.id ?? null
+
+const round = n => Math.round((n ?? 0) / 10) * 10
+
+const signature = (el, elements) => ({
+  type: el.type,
+  text: textOf(el, elements),
+  strokeColor: el.strokeColor ?? '#1e1e1e',
+  backgroundColor: el.backgroundColor ?? 'transparent',
+  strokeStyle: el.strokeStyle ?? 'solid',
+  ...(el.type === 'arrow' && { from: endpoint(el, 'start'), to: endpoint(el, 'end') }),
+  ...(el.type !== 'arrow' && { x: round(el.x), y: round(el.y) }),
+  ...(el.type !== 'arrow' && el.type !== 'text' && { width: round(el.width), height: round(el.height) }),
+})
+
+const topLevel = elements =>
+  elements.filter(e => !e.isDeleted && !(e.containerId && elements.some(c => c.id === e.containerId && !c.isDeleted)))
+
+const laneOf = (el, elements) => {
+  const tip = el.type === 'arrow' && el.points?.at(-1)
+  const cx = tip ? el.x + tip[0] : el.x + (el.width ?? 0) / 2
+  const cy = tip ? el.y + tip[1] : el.y + (el.height ?? 0) / 2
+  const frame = elements.find(
+    f => !f.isDeleted && f.id !== el.id && f.id.endsWith('-frame') && cx >= f.x && cx <= f.x + f.width && cy >= f.y && cy <= f.y + f.height,
+  )
+  return frame && { lane: frame.id.slice(0, -'-frame'.length) }
+}
+
+const summarize = (el, elements) => {
+  if (el.type !== 'arrow') return { id: el.id, type: el.type, text: textOf(el, elements), ...laneOf(el, elements) }
+  const from = endpoint(el, 'start')
+  const to = endpoint(el, 'end')
+  return { id: el.id, type: 'arrow', text: textOf(el, elements), from: from && labelOf(from, elements), to: to && labelOf(to, elements), ...laneOf(el, elements) }
+}
+
+const diff = (beforeAll, afterAll) => {
+  const before = topLevel(beforeAll)
+  const after = topLevel(afterAll)
+  const beforeById = new Map(before.map(e => [e.id, e]))
+  const afterIds = new Set(after.map(e => e.id))
+  const changes = after
+    .filter(e => beforeById.has(e.id))
+    .map(e => {
+      const was = signature(beforeById.get(e.id), beforeAll)
+      const now = signature(e, afterAll)
+      const keys = Object.keys(now).filter(key => JSON.stringify(was[key]) !== JSON.stringify(now[key]))
+      return { ...summarize(e, afterAll), keys, ...(keys.includes('text') && { was: was.text }) }
+    })
+  return {
+    added: after.filter(e => !beforeById.has(e.id)).map(e => summarize(e, afterAll)),
+    changed: changes.filter(c => c.keys.length),
+    deleted: before.filter(e => !afterIds.has(e.id)).map(e => summarize(e, beforeAll)),
+  }
+}
+
+const describeSend = async (name, names) => {
+  const baseline = names.filter(n => stamp(n) < stamp(name)).at(-1) ?? null
+  const before = baseline ? await elementsOf(baseline) : []
+  return { sent: name, baseline, ...diff(before, await elementsOf(name)) }
+}
+
+const watch = async () => {
+  const seen = new Set(await claudeSnapshots())
+  while (true) {
+    await sleep(POLL_MS)
+    const names = await claudeSnapshots().catch(error => {
+      console.error(error.message)
+      return []
+    })
+    for (const name of names.filter(n => !seen.has(n))) {
+      seen.add(name)
+      if (name.startsWith('claude-send-')) console.log(JSON.stringify(await describeSend(name, names)))
+    }
+  }
+}
+
+const handoff = async () => {
+  const name = `claude-handoff-${Date.now()}`
+  await api('/api/snapshots', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name }) })
+  const { websocket_clients } = await api('/health')
+  if (!websocket_clients) execFileSync('open', [CANVAS])
+  console.log(JSON.stringify({ handoff: name, url: CANVAS, lanUrl: LAN_URL, openedBrowser: !websocket_clients }))
+  process.exit(0)
+}
+
+const LANE = { width: 1000, height: 760, gap: 120, pad: 24, header: 110 }
+
+const laneFrame = ({ name, x, y }) => [
+  { id: `${name}-frame`, type: 'rectangle', x, y, width: LANE.width, height: LANE.height, strokeStyle: 'dashed', strokeColor: '#868e96', backgroundColor: 'transparent' },
+  { id: `${name}-title`, type: 'text', x: x + LANE.pad, y: y + 20, text: name, fontSize: 28 },
+  { id: `${name}-status`, type: 'text', x: x + LANE.pad, y: y + 62, text: 'waiting', fontSize: 18, strokeColor: '#868e96' },
+]
+
+const describeLane = ({ id, x, y, width, height }) => {
+  const name = id.slice(0, -'-frame'.length)
+  return {
+    name,
+    prefix: `${name}-`,
+    status: `${name}-status`,
+    draw: { x: x + LANE.pad, y: y + LANE.header, width: width - 2 * LANE.pad, height: height - LANE.header - LANE.pad },
+  }
+}
+
+const lanes = async names => {
+  assert(names.length && names.every(n => /^[a-z0-9][a-z0-9-]*$/.test(n)), `--lanes takes comma-separated kebab-case names, got "${names}"`)
+  const all = (await api('/api/elements')).elements.filter(e => !e.isDeleted)
+  const frameOf = name => all.find(e => e.id === `${name}-frame`)
+  const top = all.length ? Math.max(...all.map(e => e.y + Math.max(e.height ?? 0, 0))) + LANE.gap : 0
+  const left = all.length ? Math.min(...all.map(e => e.x)) : 0
+  const placed = names
+    .filter(name => !frameOf(name))
+    .map((name, i) => ({ name, x: left + i * (LANE.width + LANE.gap), y: top }))
+  if (placed.length) {
+    await api('/api/elements/batch', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ elements: placed.flatMap(laneFrame) }),
+    })
+  }
+  const frames = names.map(name => frameOf(name) ?? { id: `${name}-frame`, ...placed.find(p => p.name === name), width: LANE.width, height: LANE.height })
+  for (const frame of frames) console.log(JSON.stringify(describeLane(frame)))
+  process.exit(0)
+}
+
+const lanesArg = process.argv.indexOf('--lanes')
+if (lanesArg !== -1) await lanes((process.argv[lanesArg + 1] ?? '').split(',').filter(Boolean))
+if (process.argv.includes('--url')) {
+  console.log(CANVAS)
+  process.exit(0)
+}
+if (process.argv.includes('--start')) {
+  await start()
+  console.log(CANVAS)
+  console.log(LAN_URL)
+  process.exit(0)
+}
+if (process.argv.includes('--handoff')) await handoff()
+if (process.argv.includes('--watch')) await watch()
+const baseline = (await claudeSnapshots()).at(-1)
+const current = (await api('/api/elements')).elements
+console.log(JSON.stringify({ baseline: baseline ?? null, ...diff(baseline ? await elementsOf(baseline) : [], current) }, null, 2))
