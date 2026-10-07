@@ -6,6 +6,7 @@ My research and PR toolkit for coding agents. Understand a project, pull context
 Repo + GitHub + Linear + Notion + Drive + Slack + cloud evidence
   -> gather-context -> project-research -> plan-artifact
 Ticket + open questions + repos -> feature-plan -> answered plan with Excalidraw diagrams
+Repo or feature + "how does it work / what does it cost" -> architecture-report -> layered report (context, containers, flow, code, data, cost, ops, risk) with Excalidraw + HTML
 Sentence + paragraph + Linear issue -> idea-to-pr -> questions + detailed brief -> implement + verify -> security-scan -> pr-automation + humanizer -> PR
 Research + plan + artifact -> notion-brain save -> one Martin's Brain record
 Martin's Brain -> notion-brain recall -> context for the next plan
@@ -26,13 +27,13 @@ Use `skills@latest` to run the Skills CLI. This repo's npm package is also named
 From this checkout, including changes that have not been pushed:
 
 ```bash
-npx skills@latest add . -a claude-code codex --skill idea-to-pr feature-plan project-research gather-context plan-artifact session-history cloud-investigate notion-brain yaak-query dynomatic-query security-scan pr-automation excalidraw
+npx skills@latest add . -a claude-code codex --skill idea-to-pr architecture-report feature-plan project-research gather-context plan-artifact session-history cloud-investigate notion-brain yaak-query dynomatic-query security-scan pr-automation excalidraw
 ```
 
 Add `-g` for a global install. From GitHub, after these changes are published:
 
 ```bash
-npx skills@latest add thisguymartin/skills -g -a claude-code codex --skill idea-to-pr feature-plan project-research gather-context plan-artifact session-history cloud-investigate notion-brain yaak-query dynomatic-query security-scan pr-automation excalidraw
+npx skills@latest add thisguymartin/skills -g -a claude-code codex --skill idea-to-pr architecture-report feature-plan project-research gather-context plan-artifact session-history cloud-investigate notion-brain yaak-query dynomatic-query security-scan pr-automation excalidraw
 ```
 
 | Skill | Individual install selector |
@@ -42,6 +43,7 @@ npx skills@latest add thisguymartin/skills -g -a claude-code codex --skill idea-
 | [gather-context](#gather-context) | `--skill gather-context` |
 | [plan-artifact](#plan-artifact) | `--skill plan-artifact` |
 | [feature-plan](#feature-plan) | `--skill feature-plan` |
+| [architecture-report](#architecture-report) | `--skill architecture-report` |
 | [idea-to-pr](#idea-to-pr) | `--skill idea-to-pr` |
 | [session-history](#session-history) | `--skill session-history` |
 | [cloud-investigate](#cloud-investigate) | `--skill cloud-investigate` |
@@ -63,6 +65,7 @@ Use existing CLI tools first. Cloud investigation runs `aws` directly; saved end
 | gather-context | Access to the sources being researched | GitHub CLI (`gh`) + Node for its shortcut; Linear/Notion/Drive/Slack MCPs |
 | plan-artifact | Node 22.18+ for the bundled renderer, browser to view HTML | Existing HTML/artifact builder; artifact-upload when sharing is requested |
 | feature-plan | Node 22.18+ for the diagram script, access to the ticket and repos | gather-context, project-research, plan-artifact, excalidraw canvas, headless Chrome for the visual check, humanizer for the team message |
+| architecture-report | Node 22.18+ for the scanner, a repo checkout, the host's question tool | gather-context, project-research, cloud-investigate (Vantage, `aws`), feature-plan's diagram script, excalidraw canvas, plan-artifact or an artifact host, humanizer, notion-brain; any connected MCP (GitHub, Linear, Notion, Slack, Datadog, Sentry, Mixpanel, Vercel, DynamoDB, GraphQL) |
 | idea-to-pr | Target repo(s), security-scan + pr-automation + an installed Humanizer for delivery; `git`, authenticated `gh`, repository checks | Linear tools for issue links; gather-context/project-research for deeper investigation; Excalidraw with mer-inkdrop as the PR diagram backup |
 | session-history | Node 22.18+ and local Claude Code or Codex history | No MCP needed; `--root` supports a local export location |
 | cloud-investigate | AWS CLI v2 + authenticated profile for AWS reads | Vantage MCP for costs; Datadog/Mixpanel or other connected telemetry |
@@ -157,6 +160,18 @@ The whole chain for one request: a ticket, a rough idea, and the questions you h
 ```bash
 node feature-plan/scripts/diagrams.ts --spec feature-plan/examples/saved-carts.json --out /tmp/diagrams --no-canvas
 ```
+
+### [architecture-report](./architecture-report/)
+
+The report people keep asking for: how a project or feature works, at the altitude they need. Asks up front what the report is for (scope, altitudes, audience, destination), inventories the connected tools, runs a read-only scanner over `git ls-files` for workspaces, infra, routes, schemas, env names and external hosts, then traces each chosen altitude with its own evidence and diagram. Cost goes through cloud-investigate and Vantage and lands on the containers diagram. Diagrams render to the page and the Excalidraw canvas from one spec; prose goes through humanizer before the page is published privately.
+
+> "explain how this project works", "draw the architecture of apps/web", "what does this feature cost to run", "make me an onboarding explainer for the jobs app", "report for leadership on the ordering flow"
+
+```bash
+node architecture-report/scripts/scan-project.ts --root . --app apps/web --out /tmp/scan-web.json
+```
+
+[altitudes.md](architecture-report/altitudes.md) defines each level's question, evidence and diagram; [sources.md](architecture-report/sources.md) maps each connected tool to the altitudes it feeds; [report-template.md](architecture-report/report-template.md) fixes the page order. The scanner never runs project code and reads env variable names only.
 
 ### [idea-to-pr](./idea-to-pr/)
 
