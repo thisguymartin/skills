@@ -23,7 +23,7 @@ Remove optional sections that add nothing. Required repository template fields t
 <Relevant passing check and observed behavior. Pending/not-run check or actual limitation.>
 ```
 
-Add `## Flow` only for a useful Excalidraw image with one caption. Add a risk/rollout note only for a real migration, breaking change, operational risk, or required sequence. Put a related issue next to the behavior it explains. Use `Closes`/`Fixes` only when completing that issue is the intended merge effect.
+Add `## Flow` only for a useful, visually checked image with one caption: Excalidraw by default or mer-inkdrop as the backup. Add a risk/rollout note only for a real migration, breaking change, operational risk, or required sequence. Put a related issue next to the behavior it explains. Use `Closes`/`Fixes` only when completing that issue is the intended merge effect.
 
 Changes: usually two to four bullets, grouped by behavior. Review notes: zero to three changed paths, linked to the PR's head revision when useful. Each note explains what deserves attention; `Updated handler` or `Modified types` adds nothing. Do not include line counts, an exhaustive file table, or a commit-by-commit narrative.
 

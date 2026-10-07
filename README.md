@@ -6,6 +6,7 @@ My research and PR toolkit for coding agents. Understand a project, pull context
 Repo + GitHub + Linear + Notion + Drive + Slack + cloud evidence
   -> gather-context -> project-research -> plan-artifact
 Ticket + open questions + repos -> feature-plan -> answered plan with Excalidraw diagrams
+Sentence + paragraph + Linear issue -> idea-to-pr -> questions + detailed brief -> implement + verify -> security-scan -> pr-automation + humanizer -> PR
 Research + plan + artifact -> notion-brain save -> one Martin's Brain record
 Martin's Brain -> notion-brain recall -> context for the next plan
 Past Claude/Codex discussions -> session-history -> relevant decisions
@@ -16,7 +17,7 @@ A diagram I want to annotate -> excalidraw
 Code change -> pr-automation -> create or update one readable PR
 ```
 
-Each skill works on its own. The arrows are useful combinations, not required dependencies. Existing artifact builders and artifact-upload still work alongside these skills. Research ends at an explanation or plan unless the request includes saving to Notion. PR delivery runs when requested; description edits and local previews have narrower scopes. Implementation and public publishing need their own authorization.
+Most skills work on their own; idea-to-pr uses security-scan, pr-automation, and an installed Humanizer for delivery. The arrows show useful combinations. Existing artifact builders and artifact-upload still work alongside these skills. Research ends at an explanation or plan unless the request includes saving to Notion. Asking idea-to-pr to deliver through a PR covers its scoped implementation and PR workflow; requests for only research, issue drafts, or a plan stop there. Description edits and local previews have narrower scopes.
 
 ## Install the skills
 
@@ -25,13 +26,13 @@ Use `skills@latest` to run the Skills CLI. This repo's npm package is also named
 From this checkout, including changes that have not been pushed:
 
 ```bash
-npx skills@latest add . -a claude-code codex --skill feature-plan project-research gather-context plan-artifact session-history cloud-investigate notion-brain yaak-query dynomatic-query pr-automation excalidraw
+npx skills@latest add . -a claude-code codex --skill idea-to-pr feature-plan project-research gather-context plan-artifact session-history cloud-investigate notion-brain yaak-query dynomatic-query security-scan pr-automation excalidraw
 ```
 
 Add `-g` for a global install. From GitHub, after these changes are published:
 
 ```bash
-npx skills@latest add thisguymartin/skills -g -a claude-code codex --skill feature-plan project-research gather-context plan-artifact session-history cloud-investigate notion-brain yaak-query dynomatic-query pr-automation excalidraw
+npx skills@latest add thisguymartin/skills -g -a claude-code codex --skill idea-to-pr feature-plan project-research gather-context plan-artifact session-history cloud-investigate notion-brain yaak-query dynomatic-query security-scan pr-automation excalidraw
 ```
 
 | Skill | Individual install selector |
@@ -41,6 +42,7 @@ npx skills@latest add thisguymartin/skills -g -a claude-code codex --skill featu
 | [gather-context](#gather-context) | `--skill gather-context` |
 | [plan-artifact](#plan-artifact) | `--skill plan-artifact` |
 | [feature-plan](#feature-plan) | `--skill feature-plan` |
+| [idea-to-pr](#idea-to-pr) | `--skill idea-to-pr` |
 | [session-history](#session-history) | `--skill session-history` |
 | [cloud-investigate](#cloud-investigate) | `--skill cloud-investigate` |
 | [notion-brain](#notion-brain) | `--skill notion-brain` |
@@ -61,13 +63,14 @@ Use existing CLI tools first. Cloud investigation runs `aws` directly; saved end
 | gather-context | Access to the sources being researched | GitHub CLI (`gh`) + Node for its shortcut; Linear/Notion/Drive/Slack MCPs |
 | plan-artifact | Node 22.18+ for the bundled renderer, browser to view HTML | Existing HTML/artifact builder; artifact-upload when sharing is requested |
 | feature-plan | Node 22.18+ for the diagram script, access to the ticket and repos | gather-context, project-research, plan-artifact, excalidraw canvas, headless Chrome for the visual check, humanizer for the team message |
+| idea-to-pr | Target repo(s), security-scan + pr-automation + an installed Humanizer for delivery; `git`, authenticated `gh`, repository checks | Linear tools for issue links; gather-context/project-research for deeper investigation; Excalidraw with mer-inkdrop as the PR diagram backup |
 | session-history | Node 22.18+ and local Claude Code or Codex history | No MCP needed; `--root` supports a local export location |
 | cloud-investigate | AWS CLI v2 + authenticated profile for AWS reads | Vantage MCP for costs; Datadog/Mixpanel or other connected telemetry |
 | notion-brain | Connected Notion read tools; page-write access for saves/updates | Notion attachment tools for requested local artifacts; existing research/artifact outputs |
 | yaak-query | Yaak desktop collection + `@yaakapp/cli`; Node/npm to install the CLI | `jq` for local projections/redaction; existing Yaak MCP or official use-yaak skill |
 | security-scan | Repo checkout; `git`, `gh` for PR targets | Package audit tool (`pnpm audit`, `govulncheck`, `pip-audit`) for `--audit` |
 | dynomatic-query | Dynomatic desktop app running with its MCP server enabled, registered in Claude Code or Codex; authenticated AWS profile inside the app | Sample Mode for testing without AWS; excalidraw/plan-artifact for data-model diagrams |
-| pr-automation | `git`, authenticated GitHub CLI (`gh`), repository checks for code delivery | Existing Humanizer skill; Excalidraw skill + drawing/export tools for diagrams; GitHub attachment route |
+| pr-automation | `git`, authenticated GitHub CLI (`gh`), repository checks for code delivery | Existing Humanizer skill; Excalidraw skill + drawing/export tools; mer-inkdrop diagram backup; GitHub attachment route |
 | excalidraw | Node, local Excalidraw MCP/canvas, `excalidraw-inbox` launcher | Tablet on the local network; setup needs git/pnpm |
 
 No npm dependencies are needed for the three new helpers. If you already use a Node version manager, keep using it. The scripts use native TypeScript support; [Node's docs](https://nodejs.org/en/learn/typescript/run-natively) explain the version requirement.
@@ -155,6 +158,21 @@ The whole chain for one request: a ticket, a rough idea, and the questions you h
 node feature-plan/scripts/diagrams.ts --spec feature-plan/examples/saved-carts.json --out /tmp/diagrams --no-canvas
 ```
 
+### [idea-to-pr](./idea-to-pr/)
+
+One entry point from a rough sentence, paragraph, or Linear issue to a PR. Always asks a meaningful discovery question, follows up in small rounds, and records what the answers change. Traces the frontend, API, backend, saved data, and other consumers where relevant. Builds a detailed brief with domain rules, code evidence, frontend/backend ownership, file-level steps, acceptance cases, and verification. Runs security-scan on each repo's final change before delivery, returns findings to implementation, and rechecks fixes. Uses pr-automation and an installed Humanizer to finish with a concise PR, with Excalidraw for useful flow diagrams; separate repos get scoped, linked PRs.
+
+> "dig into this idea with me, then build it and open a PR", "take this Linear issue through questions to a PR", "figure out the frontend/backend issues we need and keep them scoped"
+
+```text
+Use idea-to-pr with JBT-626 and JBT-627 across the frontend and Biggie.
+Ask me about the behavior and edge cases. Trace both repos and create a
+detailed brief with scoped frontend/backend work, acceptance criteria,
+and verification. Then implement and open the PRs.
+```
+
+For a narrower destination, say "only draft the scoped issues" or "plan only". Existing templates can be supplied; otherwise use the [adaptable working brief and issue templates](idea-to-pr/templates.md). The [interview guide](idea-to-pr/interview.md) shows how questions build on answers. Humanizer is an existing external skill, not bundled or installed automatically. Creating this skill does not publish a PR or create tracker issues.
+
 ### [session-history](./session-history/)
 
 Searches local Claude Code and Codex discussions to recover useful decisions and workflow patterns. Defaults to bounded user prompts; full user/assistant text requires an exact session ID. It does not access claude.ai web history or export entire archives.
@@ -208,7 +226,7 @@ The app must be running with Settings -> MCP Server enabled. [tools.md](dynomati
 
 ### [pr-automation](./pr-automation/)
 
-Creates or updates the current branch's PR, rewrites a named PR description, or prepares a local preview. Keeps the body short: what changed and why, a few behavior bullets, up to three critical-file review notes, and actual validation. Uses an installed Humanizer skill when available and Excalidraw for flows that need a diagram. Description-only updates do not commit or push; delivery stages scoped work and preserves manual PR notes.
+Creates or updates the current branch's PR, rewrites a named PR description, or prepares a local preview. Keeps the body short: what changed and why, a few behavior bullets, up to three critical-file review notes, and actual validation. Uses an installed Humanizer skill when available and Excalidraw for flows that need a diagram, with mer-inkdrop as the backup. Description-only updates do not commit or push; delivery stages scoped work and preserves manual PR notes.
 
 > "create a PR", "push these changes and update the PR", "rewrite this PR description", "draft a PR description with an Excalidraw flow"
 
@@ -217,7 +235,7 @@ Use pr-automation to create or update this PR. Base: develop.
 Reviewers: alice. Diagram: auto. Keep it short.
 ```
 
-See the [description template and examples](pr-automation/description.md) and [diagram workflow](pr-automation/diagrams.md). Use `diagram: always` to request a diagram or `diagram: off` to skip it. Existing Humanizer/Excalidraw tools are discovered, not installed. Missing diagram access is reported explicitly.
+See the [description template and examples](pr-automation/description.md) and [diagram workflow](pr-automation/diagrams.md). Use `diagram: always` to request a diagram or `diagram: off` to skip it. Existing Humanizer/Excalidraw/mer-inkdrop tools are discovered, not installed. [mer-inkdrop](https://github.com/thisguymartin/mer-inkdrop) renders through mermaid.ink, so backup diagram source must be sanitized; keep its `.mmd` source and inspect the rendered image before including it. Missing diagram access is reported explicitly.
 
 ### [security-scan](./security-scan/)
 

@@ -1,6 +1,6 @@
 ---
 name: pr-automation
-description: "Creates or updates GitHub pull requests with concise, humanized descriptions, critical-file review notes, honest validation, and Excalidraw diagrams for meaningful flows. Use when the user asks to create a PR, update a PR, rewrite its description, or prepare a local PR draft."
+description: "Creates or updates GitHub pull requests with concise, humanized descriptions, critical-file review notes, honest validation, and Excalidraw diagrams with a mer-inkdrop backup for meaningful flows. Use when the user asks to create a PR, update a PR, rewrite its description, or prepare a local PR draft."
 license: MIT
 ---
 
@@ -22,7 +22,7 @@ Choose the mode from the request:
 
 For "update the PR", deliver when the conversation identifies code changes to publish; otherwise describe. Honor narrower instructions such as "don't push". A draft **PR** is a GitHub write; a local preview is not. Do not use `gh pr create --dry-run` for a local preview: it may push.
 
-This skill does not merge, deploy, perform a full code review, install tools/skills, or run Pstack. Humanizer and Excalidraw are optional helpers discovered at runtime; use the writing fallback below when Humanizer is absent. Diagram access limits do not block useful PR preparation.
+This skill does not merge, deploy, perform a full code review, install tools/skills, or run Pstack. Humanizer, Excalidraw, and the mer-inkdrop diagram backup are optional helpers discovered at runtime; use the writing fallback below when Humanizer is absent. Diagram access limits do not block useful PR preparation.
 
 ## 1. Establish the target
 
@@ -73,7 +73,7 @@ Lead with the concrete problem and resulting behavior. Add only useful change bu
 
 Discover the installed `humanizer` skill (some hosts expose `humanizer:humanizer`), read it, and use embedded mode on the final title/body/caption. Keep only the final prose. Preserve technical names, paths, commands, issue links, required template fields, and validation caveats. If unavailable, remove filler, inflated claims, repeated summaries, decorative labels, and chat residue yourself; do not install it or claim it ran.
 
-Use [diagrams.md](diagrams.md) for Excalidraw. In auto mode, draw when a changed request/data flow, queue/worker, state transition, or cross-service boundary is easier to review visually. Generate an editable scene and a checked image; explain the changed step in one short caption. For a tiny change, skip the diagram unless requested. Do not replace a requested Excalidraw diagram with Mermaid without agreement.
+Use [diagrams.md](diagrams.md): prefer Excalidraw, with mer-inkdrop as the backup when Excalidraw generation/export is unavailable or fails. In auto mode, draw when a changed request/data flow, queue/worker, state transition, or cross-service boundary is easier to review visually. Preserve editable source and a checked image; explain the changed step in one short caption. For a tiny change, skip the diagram unless requested. Honor an explicit Excalidraw-only request and identify any backup output accurately.
 
 On updates, preserve manual reviewer notes, checklists and their checked state, issue links, and useful screenshots. Refresh stale generated explanations/testing/flow images from the final diff; avoid appending a second copy of each section. Save the existing body locally before replacing it.
 
