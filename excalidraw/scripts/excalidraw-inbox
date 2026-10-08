@@ -2,15 +2,18 @@
 import assert from 'node:assert'
 import { execFileSync, spawn } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { mkdirSync, openSync } from 'node:fs'
+import { closeSync, existsSync, mkdirSync, openSync, readFileSync } from 'node:fs'
 import { homedir, hostname } from 'node:os'
+import { dirname, join } from 'node:path'
 import { setTimeout as sleep } from 'node:timers/promises'
+import { fileURLToPath } from 'node:url'
 
-const SESSION = process.env.CLAUDE_CODE_SESSION_ID
+const SESSION = process.env.EXCALIDRAW_SESSION_ID ?? process.env.CLAUDE_CODE_SESSION_ID ?? process.env.CODEX_SESSION_ID ?? process.env.CODEX_THREAD_ID
+if (SESSION) assert(/^[A-Za-z0-9_-]+$/.test(SESSION), 'Session ID must contain only letters, digits, underscores or dashes')
 const POLL_MS = 1000
 
 const sessionPort = () => {
-  assert(SESSION, 'CLAUDE_CODE_SESSION_ID is unset — run this from a Claude Code session or set EXPRESS_SERVER_URL')
+  assert(SESSION, 'Set EXCALIDRAW_SESSION_ID (or a Claude/Codex session ID), or set EXPRESS_SERVER_URL for an existing canvas')
   return 20000 + (createHash('sha256').update(SESSION).digest().readUInt32BE(0) % 20000)
 }
 
@@ -18,31 +21,48 @@ const CANVAS = process.env.EXPRESS_SERVER_URL ?? `http://127.0.0.1:${sessionPort
 const LAN_URL = `http://${hostname().replace(/\.local$/, '')}.local:${new URL(CANVAS).port}`
 
 const api = async (path, init) => {
-  const res = await fetch(`${CANVAS}${path}`, init)
+  const res = await fetch(`${CANVAS}${path}`, { signal: AbortSignal.timeout(10_000), ...init })
   if (res.ok) return res.json()
   assert.fail(`${init?.method ?? 'GET'} ${path} answered ${res.status}: ${await res.text()}`)
 }
 
 const running = async () => {
-  const res = await fetch(`${CANVAS}/health`).catch(() => null)
+  const res = await fetch(`${CANVAS}/health`, { signal: AbortSignal.timeout(1500) }).catch(() => null)
   if (!res?.ok) return false
-  return (await res.json()).service === 'mcp-excalidraw-canvas'
+  const health = await res.json()
+  return health.service === 'mcp-excalidraw-canvas' ? health : false
 }
 
 const start = async () => {
-  if (await running()) return
-  const owner = process.env.CLAUDE_PID
-  assert(SESSION && owner, 'CLAUDE_CODE_SESSION_ID and CLAUDE_PID must be set — start the canvas from a Claude Code session')
-  const dir = `${homedir()}/mcp/excalidraw-data/sessions/${SESSION}`
+  const dir = SESSION ? `${homedir()}/mcp/excalidraw-data/sessions/${SESSION}` : null
+  const readyFile = dir && `${dir}/canvas-ready.json`
+  const existing = await running()
+  if (existing) {
+    if (process.env.EXPRESS_SERVER_URL) return
+    let prior
+    try { prior = JSON.parse(readFileSync(readyFile, 'utf8')) } catch {}
+    assert(prior && typeof existing.pid === 'number' && prior.serverPid === existing.pid, 'Port is occupied by another canvas; select the intended canvas with EXPRESS_SERVER_URL or choose a different port')
+    return
+  }
+  const owner = process.env.EXCALIDRAW_OWNER_PID ?? process.env.CLAUDE_PID ?? process.env.CODEX_PID
+  assert(SESSION && owner && /^[1-9]\d*$/.test(owner) && Number(owner) > 1, 'Starting a canvas requires a session ID and EXCALIDRAW_OWNER_PID (or CLAUDE_PID/CODEX_PID) for the long-lived harness process')
+  const host = new URL(CANVAS).hostname
+  assert(['localhost', '127.0.0.1'].includes(host), '--start only launches a local canvas; use other URLs for an already running canvas')
   mkdirSync(dir, { recursive: true })
   const log = openSync(`${dir}/canvas.log`, 'a')
-  spawn(`${homedir()}/mcp/run_excalidraw_canvas.sh`, {
+  const child = spawn(process.execPath, [join(dirname(fileURLToPath(import.meta.url)), 'run-canvas.mjs')], {
     detached: true,
     stdio: ['ignore', log, log],
-    env: { ...process.env, PORT: new URL(CANVAS).port, SAVE: `${dir}/scene.excalidraw`, OWNER_PID: owner },
-  }).unref()
-  for (let i = 0; i < 50 && !(await running()); i++) await sleep(200)
-  assert(await running(), `canvas did not come up at ${CANVAS} — see ${dir}/canvas.log`)
+    env: { ...process.env, PORT: new URL(CANVAS).port, SAVE: `${dir}/scene.excalidraw`, READY: readyFile, OWNER_PID: owner },
+  })
+  child.on('error', error => console.error(`Canvas launch failed: ${error.message}`))
+  child.unref()
+  closeSync(log)
+  const restored = () => {
+    try { return existsSync(readyFile) && JSON.parse(readFileSync(readyFile, 'utf8')).pid === child.pid } catch { return false }
+  }
+  for (let i = 0; i < 60 && !restored() && child.exitCode === null; i++) await sleep(200)
+  assert(restored() && await running(), `canvas did not come up and restore at ${CANVAS} — see ${dir}/canvas.log`)
 }
 
 const stamp = name => Number(name.split('-').at(-1))

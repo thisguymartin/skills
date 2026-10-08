@@ -47,7 +47,7 @@ A ticket link or id, the repos involved (paths can be wrong), the asker's questi
 
 ## Excalidraw canvas
 
-The script looks for a canvas at `--canvas <url>`, then `EXPRESS_SERVER_URL`, then `excalidraw-inbox --url`, then `http://127.0.0.1:3000`, and checks `GET /health` for `service: mcp-excalidraw-canvas`. When it is up, the scenes are appended below whatever is already on the canvas; `--replace` clears it first and should only be used when the asker agrees. When it is down, the page SVG and `.excalidraw` files are still written and the script prints how to start a canvas. A missing canvas never blocks the plan.
+Use a new output directory for each revision; the script refuses existing directories to preserve edited scenes. It looks for a canvas at `--canvas <url>`, then `EXPRESS_SERVER_URL`, then `excalidraw-inbox --url`, then `http://127.0.0.1:3000`, and checks `GET /health` for `service: mcp-excalidraw-canvas`. When it is up, each push appends a new revision with fresh IDs below existing content; earlier drawings and annotations stay intact. `--replace` requires the asker's agreement and saves a recovery snapshot before replacing the canvas. When it is down, the page SVG and `.excalidraw` files are still written and the script prints how to start a canvas. A missing canvas never blocks the plan.
 
 After pushing, the excalidraw skill's handoff and Send to Claude loop works on the same canvas if its launcher is installed. Without it, export a PNG for a visual check:
 

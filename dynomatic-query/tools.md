@@ -48,14 +48,14 @@ Read-only, safe for investigation:
 | `app_status`, `list_profiles`, `profile_status` | Reachability, which AWS profiles exist and are authenticated |
 | `environment_report` | Every profile/table classified prod/staging/dev with confidence. Call first. |
 | `list_tables`, `describe_table` | Discover tables; keys, indexes, item count, size, billing |
-| `schema_profile`, `data_model`, `infer_data_model` | Attribute shapes and single-table entity map inferred from a sample |
-| `get_item`, `batch_get_items` | Known keys. Cheapest reads. |
-| `query` | Key condition on PK (and SK range) or an index. Pass `limit`. |
-| `partiql` | SQL-like read; keep a WHERE on keys. Can also write if allowed, so read the statement before sending. |
-| `scan` | Last resort. Always `limit` + filter + one page. |
-| `stream_records` | DynamoDB Streams viewer records for change history |
-| `list_saved_queries`, `list_saved_scripts` | Reuse what the user already saved in the app |
-| `show_table`, `show_item`, `render_template`, `list_commands` | Open views in the app UI; cosmetic |
+| `schema_profile`, `data_model` | Stored attribute shapes and entity map; inspect whether sampled values are included before calling |
+| `get_item`, `batch_get_items` | Known keys; use only when the live schema supports a safe projection or the data is synthetic |
+| `query` | Key condition on PK (and SK range) or an index. Pass a safe projection and `limit`. |
+| `partiql` | SELECT named safe attributes with a WHERE on keys; never SELECT *. Writes are outside this skill. |
+| `scan` | Last resort. Safe projection + `limit` + filter + one page. |
+| `stream_records` | Cached change records; raw old/new images need masking before reaching the model |
+| `list_saved_queries` | Reuse saved queries only when discovery excludes embedded secrets |
+| `show_table`, `show_item`, `list_commands` | Open views without fetching item values, or discover command metadata |
 
 Resources: `dynomatic://table/{profile}/{region}/{name}/schema` and `.../data-model`.
 
@@ -67,6 +67,9 @@ Side effects or cost; only when the user names them:
 | `export_start`, `export_status`, `export_cancel` | Full-table read, writes files |
 | `run_script`, `invoke_command` | Executes user code or app commands; may write |
 | `save_query` | Persists into the user's saved queries |
+| `infer_data_model` | Local write: re-infers and replaces the stored data model; outside read-only investigation |
+| `render_template` | Resolves secure values to plaintext in its response; avoid secret-bearing templates |
+| `list_saved_scripts` | Returns saved code, which may contain credentials; inspect only synthetic or sanitized scripts |
 
 Writes, blocked by app toggles and outside this skill:
 
@@ -79,8 +82,9 @@ environment_report
   -> list_tables(profile, region)
   -> describe_table(table)            # keys, GSIs, count, size
   -> data_model(table)                # only if key layout unclear
-  -> get_item | query(limit=25) | partiql(WHERE pk=...)
-  -> redact locally -> evidence record
+  -> verify projection/masking excludes sensitive values
+  -> projected key read | query(projection, limit=25) | partiql(SELECT safe fields WHERE pk=...)
+  -> safe evidence record
 ```
 
 Example argument shape (synthetic):
@@ -89,4 +93,4 @@ Example argument shape (synthetic):
 {"profile":"research-dev","region":"us-west-2","table":"app-main","keyCondition":"PK = :pk AND begins_with(SK, :sk)","values":{":pk":"ORG#demo-1",":sk":"ORDER#"},"limit":25}
 ```
 
-Exact parameter names come from the live schema.
+This illustrates key selection and limits only. Add the live tool's projection parameter before reading real data; if no safe projection is supported, use Sample Mode or metadata instead. Exact parameter names come from the live schema.

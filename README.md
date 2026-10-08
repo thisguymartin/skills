@@ -53,7 +53,7 @@ npx skills@latest add thisguymartin/skills -g -a claude-code codex --skill idea-
 | [security-scan](#security-scan) | `--skill security-scan` |
 | [pr-automation](#pr-automation) | `--skill pr-automation` |
 
-These commands are documented, not run automatically. Installing this collection does not remove previously installed skills with old names; see [compatibility](docs/compatibility.md) for migration.
+These commands are documented, not run automatically. Installing this collection does not remove previously installed skills with old names. Inspect your installed collection and explicitly remove obsolete names when requested.
 
 ## What I need installed
 
@@ -76,7 +76,7 @@ Use existing CLI tools first. Cloud investigation runs `aws` directly; saved end
 | pr-automation | `git`, authenticated GitHub CLI (`gh`), repository checks for code delivery | Existing Humanizer skill; Excalidraw skill + drawing/export tools; mer-inkdrop diagram backup; GitHub attachment route |
 | excalidraw | Node, local Excalidraw MCP/canvas, `excalidraw-inbox` launcher | Tablet on the local network; setup needs git/pnpm |
 
-No npm dependencies are needed for the three new helpers. If you already use a Node version manager, keep using it. The scripts use native TypeScript support; [Node's docs](https://nodejs.org/en/learn/typescript/run-natively) explain the version requirement.
+The runtime helpers use Node's built-in modules and need no npm dependencies. Repository validation uses the development-only `yaml` parser installed with pnpm. If you already use a Node version manager, keep using it. The scripts use native TypeScript support; [Node's docs](https://nodejs.org/en/learn/typescript/run-natively) explain the version requirement.
 
 On macOS with Homebrew, convenient installs are:
 
@@ -119,7 +119,7 @@ Yaak also ships a general skill through `yaak agent install`. That writes global
 
 ### [excalidraw](./excalidraw/)
 
-The existing local canvas round trip: draw -> hand over -> read annotations -> update the diagram. Its launcher is preserved. The removed parallel-lanes companion is optional behavior now described in the entrypoint. See [canvas setup](excalidraw/INSTALL.md); the Send to Claude workflow needs the local branch and MCP configuration described there.
+The local canvas round trip: draw -> hand over -> read annotations -> update the diagram. The bundled launcher supports Claude/Codex session settings and restores saved scenes. The parallel-lanes companion is optional. See [canvas setup](excalidraw/INSTALL.md); manual annotation works with the standard frontend, while Send to Claude listening needs its customized frontend.
 
 > "draw this in excalidraw", "let me annotate it", "check the canvas"
 
@@ -146,14 +146,14 @@ Turns evidence and a plan into a standalone HTML explanation. The included rende
 > "turn this research into an HTML plan", "make the current and proposed flows visual", "create a readable explanation I can share"
 
 ```bash
-node plan-artifact/scripts/render-brief.ts --input docs/examples/research-brief.json --output /tmp/research-brief.html
+node plan-artifact/scripts/render-brief.ts --input plan-artifact/examples/research-brief.json --output /tmp/research-brief.html
 ```
 
-Open the [rendered example](docs/examples/research-brief.html) or edit [research-brief.json](docs/examples/research-brief.json). The renderer refuses to overwrite existing files; use a new filename for a revision.
+Edit the [synthetic example](plan-artifact/examples/research-brief.json), render it with the command above, then open the output locally. The renderer refuses to overwrite existing files; use a new filename for a revision.
 
 ### [feature-plan](./feature-plan/)
 
-The whole chain for one request: a ticket, a rough idea, and the questions you half answered ("store it per property? S3 or Dynamo? edit later? one or many?"). Reads the ticket trail, finds branches and memos that already exist, reads the code in every repo, models the domain, then answers each question with a confidence and draws today, built-on-a-branch and proposed flows. One diagram spec renders the page SVG, `.excalidraw` files, and a push to the live canvas when one is running.
+The whole chain for one request: a ticket, a rough idea, and the questions you half answered ("store it per property? S3 or Dynamo? edit later? one or many?"). Reads the ticket trail, finds branches and memos that already exist, reads the code in every repo, models the domain, then answers each question with a confidence and draws today, built-on-a-branch and proposed flows. One diagram spec renders the page SVG, `.excalidraw` files, and a push to the live canvas when one is running. Use a new output directory for every revision; canvas pushes append fresh elements and preserve previous annotations.
 
 > "here's the Linear issue, should we store this per property?", "research both repos and give me a visual plan", "plan this with excalidraw diagrams"
 
@@ -228,7 +228,7 @@ Use IDs returned by discovery, then follow the [native query commands](yaak-quer
 
 ### [dynomatic-query](./dynomatic-query/)
 
-Answers DynamoDB data questions through the Dynomatic desktop app's MCP server: which tables exist, how a single-table model is keyed, what an item actually contains, why data disagrees with the UI. Classifies prod vs non-prod first, prefers key reads over scans, bounds every page, and redacts item payloads before they leave the machine. Read-only; writes are a separate handoff.
+Answers DynamoDB data questions through the Dynomatic desktop app's MCP server: which tables exist, how a single-table model is keyed, and why data disagrees with the UI. Classifies prod vs non-prod first, prefers key reads over scans, and requires safe server-side projection or masking before item values reach the model. Unsupported projections stop the item read; Sample Mode, metadata, and already redacted exports remain available. Read-only; writes are a separate handoff.
 
 > "what's in this DynamoDB table", "why does this order look wrong in Dynamo", "show me the data model for this table", "set up dynomatic mcp in codex"
 
@@ -276,15 +276,16 @@ cloud-investigate + gather-context -> plan-artifact -> notion-brain save
 notion-brain recall -> project-research -> a plan grounded in prior decisions
 ```
 
-See [chained prompts and failure behavior](docs/notion-brain-workflow.md). Asking to preview a record stays local; asking to save it authorizes one Notion record. Skill creation and installation do not create live records.
+See [save, recall, and failure behavior](notion-brain/SKILL.md). Asking to preview a record stays local; asking to save it authorizes one Notion record. Skill creation and installation do not create live records.
 
 ## Check the repo
 
 ```bash
+corepack pnpm install --frozen-lockfile
 npm run check
 npm test
 ```
 
-[Scenarios](docs/examples/scenarios.md) cover expected agent behavior, including PR scope, repeated updates, preserved notes, and diagram gaps; automated checks cover packaging, renderer, history filters, GitHub CLI argument safety, and provenance tooling. AWS and PR command examples are checked against official docs; PR delivery and attachment behavior still need live usage. Synthetic fixtures only; no live AWS, Vantage, Linear, Notion, Slack, or GitHub writes are used for tests.
+Automated checks cover YAML and local links, artifact preservation, HTML escaping, canvas revisions and recovery snapshots, Codex session discovery, bundled canvas startup/persistence, history filters, and GitHub CLI argument safety. Tests use synthetic files and local mock servers. PR delivery, attachments, and live integrations still need usage in their intended environments; no live AWS, Vantage, Linear, Notion, Slack, or GitHub writes are used for tests.
 
-See [upstream research](docs/upstreams.md), [compatibility](docs/compatibility.md), [verification and limits](docs/verification.md), and [third-party notices](THIRD_PARTY_NOTICES.md). Original skills/scripts are [MIT](LICENSE); adaptations retain Notion's and Yaak's MIT notices. Excalidraw is retained local material with its source/license status documented separately.
+Source revisions and adaptations are recorded in [third-party notices](THIRD_PARTY_NOTICES.md). Original skills/scripts are [MIT](LICENSE); adaptations retain Notion's and Yaak's MIT notices. Excalidraw's retained material has its source/license status documented separately.

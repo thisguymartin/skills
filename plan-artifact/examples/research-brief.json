@@ -1,0 +1,13 @@
+{
+  "title": "Synthetic event delivery plan",
+  "question": "How do we make failed event delivery visible?",
+  "summary": "Expose a failure state and allow a bounded retry.",
+  "scope": "Synthetic fixture; no live systems queried.",
+  "sections": [{ "id": "behavior", "title": "Current behavior", "paragraphs": ["A failed callback leaves the synthetic job pending."], "evidence": ["S1"] }],
+  "flows": [{ "title": "Current delivery", "state": "current", "nodes": [
+    { "id": "queue", "label": "Queue", "detail": "Owns pending synthetic events", "evidence": ["S1"] },
+    { "id": "worker", "label": "Worker", "detail": "Attempts delivery", "evidence": ["S1"] }
+  ], "edges": [{ "from": "queue", "to": "worker", "label": "event", "evidence": ["S1"] }] }],
+  "plan": [{ "title": "Expose failure state", "outcome": "People can see a failed delivery", "dependsOn": "Agree on the job lifecycle", "check": "A synthetic failed callback is visible and recoverable" }],
+  "sources": [{ "id": "S1", "label": "Synthetic fixture", "locator": "Example only", "retrievedAt": "2026-10-07", "origin": "synthetic" }]
+}

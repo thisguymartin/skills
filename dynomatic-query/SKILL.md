@@ -20,11 +20,11 @@ Tool names and schemas come from the live `tools/list`; the names in tools.md we
 
 1. `environment_report` first. It classifies every profile and table as prod/staging/dev with a confidence. Prefer a non-production profile when one holds the same data. A profile named "staging" is a hint, not proof; trust the report plus the table ARN region/account.
 2. `list_tables` for the chosen profile/region, then `describe_table` for the target: partition key, sort key, GSIs/LSIs, item count, size, billing mode. Record these; they decide whether the question can be answered with a `query` or needs a `scan`.
-3. When key layout is unclear (single-table designs), call `data_model` or `infer_data_model` once and read the entity map. Do not guess key prefixes; confirm them from the model or one `get_item`.
+3. When key layout is unclear (single-table designs), read `data_model` or `schema_profile`. `infer_data_model` replaces the app's stored model and is outside this read-only workflow. If no model exists, trace the key layout in source or use a projected synthetic sample.
 
 ## Read with bounds
 
-- Prefer `get_item` / `batch_get_items` when keys are known, then `query` on a key condition, then `partiql` with a WHERE on keys. `scan` is last resort: always pass a `limit` (start at 25), a filter, and stop after one page unless the user asks for more.
+- Before an item read, inspect the live schema for a server-side projection and allowlist only nonsensitive attributes. Prefer a projected key read, then `query` on a key condition, then a `partiql` SELECT of named fields with a WHERE on keys. Never use SELECT *. `scan` is last resort: always pass a projection, a `limit` (start at 25), a filter, and stop after one page unless the user asks for more.
 - Never run an unbounded `scan` or a full-table export on a table the environment report calls production. If the question needs a full pass, say so, give the item count and estimated read cost from `describe_table`, and get explicit go-ahead.
 - Set a small page size and keep the pagination token. One page does not prove absence; say "not in the first N items" rather than "does not exist".
 - `semantic_search` and `run_script` can be expensive or have side effects; use them only when the user names them. `run_script` executes user scripts and may write; treat it as outside research scope.
@@ -32,7 +32,9 @@ Tool names and schemas come from the live `tools/list`; the names in tools.md we
 
 ## Handle the data
 
-Item payloads can contain real customer data. Keep raw results local. Before results enter a prompt, artifact, Linear issue, or Notion page, project to the fields the question needs and redact names, emails, phone numbers, addresses, and tokens. Never paste a raw item into an external AI service or shared artifact. Attribute values with `S`/`N`/`M` type wrappers are DynamoDB JSON; translate to plain shapes when explaining.
+MCP tool responses enter the model context immediately. Redacting an answer afterward does not prevent exposure. Before calling an item-returning tool, require a server-side projection or masking that excludes customer payloads, names, emails, phone numbers, addresses, and tokens, including nested fields. Keys can also contain sensitive values; inspect their layout before selecting them. If the tool cannot return a safe shape, stop that read and use Sample Mode, schema metadata, or an already redacted local export. Do not fetch a full real item to decide which fields to redact.
+
+`render_template` can resolve secret references to plaintext, and saved scripts can contain credentials. Neither is an ordinary discovery read; avoid returning their contents to the model. Attribute values with `S`/`N`/`M` type wrappers are DynamoDB JSON; translate safe projected shapes when explaining.
 
 Distinguish outcomes: access denied, table not found, empty page, throttled, and "found but not matching" are different findings. A tool error is not an empty result.
 

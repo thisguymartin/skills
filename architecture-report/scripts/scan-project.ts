@@ -247,12 +247,12 @@ const scan: Scan = {
 };
 
 const outPath = resolve(values.out as string);
-if (existsSync(outPath)) {
-  console.error(`refusing to overwrite ${outPath}; pick a new --out`);
+if (existsSync(outPath) || existsSync(outPath + '.md')) {
+  console.error(`refusing to overwrite ${outPath} or its Markdown summary; pick a new --out`);
   process.exit(1);
 }
-writeFileSync(outPath, JSON.stringify(scan, null, 2));
-writeFileSync(outPath + '.md', summary(scan));
+writeFileSync(outPath, JSON.stringify(scan, null, 2), { flag: 'wx' });
+writeFileSync(outPath + '.md', summary(scan), { flag: 'wx' });
 console.log(`wrote ${relative(process.cwd(), outPath)} and ${relative(process.cwd(), outPath)}.md`);
 console.log(`${scan.fileCount} tracked files, ${scan.workspaces.length} workspaces, ${scan.routes.length} route files, ${Object.keys(scan.externalHosts).length} external hosts`);
 for (const w of warnings) console.warn(`warning: ${w}`);

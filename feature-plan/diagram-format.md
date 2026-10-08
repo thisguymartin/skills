@@ -87,12 +87,12 @@ One figure per diagram. Inline `<id>.svg` inside `.canvas`, and build the text e
 
 ## Copy to Excalidraw
 
-Inline `scenes.json` (escape `<` as `<`) and this script. Pasting the copied JSON into excalidraw.com drops the diagram onto its canvas.
+Inline the generated `scenes.inline.json` in the script below. It encodes `<` as the literal JSON escape `\u003c`, so a label containing `</script>` cannot close the script element. Keep `scenes.json` for ordinary JSON consumers; never embed that raw file in HTML. Pasting the copied JSON into excalidraw.com drops the diagram onto its canvas.
 
 ```html
 <script>
 (() => {
-  const scenes = /* contents of scenes.json */;
+  const scenes = /* contents of scenes.inline.json */;
   document.querySelectorAll('button.copy').forEach((btn) => {
     btn.addEventListener('click', () => {
       const json = JSON.stringify(scenes[btn.dataset.scene]);

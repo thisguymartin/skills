@@ -9,7 +9,9 @@
   },
   "scripts": {
     "check": "node .github/scripts/validate-skills.ts",
-    "test": "node --test .github/scripts/tooling.test.ts .github/scripts/runtime.test.ts",
-    "check:upstreams": "node .github/scripts/check-upstreams.ts"
+    "test": "node --test .github/scripts/tooling.test.ts .github/scripts/runtime.test.ts"
+  },
+  "devDependencies": {
+    "yaml": "^2.9.1"
   }
 }

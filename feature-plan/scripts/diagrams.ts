@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { parseArgs } from 'node:util';
 
 type State = 'current' | 'built' | 'new' | 'fail' | 'rule';
@@ -31,12 +32,15 @@ Renders every diagram in the spec to:
   <out>/<id>.svg          inline SVG fragment for the page (uses the CSS in diagram-format.md)
   <out>/<id>.excalidraw   scene file for excalidraw.com or the local canvas
   <out>/scenes.json       clipboard scenes for the page's Copy to Excalidraw buttons
+  <out>/scenes.inline.json  JSON escaped for embedding inside an HTML script element
   <out>/index.json        titles and edges, for the page's text equivalents
+
+The output directory must be new. Use a new path for each revision.
 
 Options:
   --canvas <url>   canvas to push to (default: EXPRESS_SERVER_URL, then excalidraw-inbox --url, then http://127.0.0.1:3000)
   --no-canvas      skip the canvas
-  --replace        clear the canvas before pushing (default appends below existing content)
+  --replace        snapshot then replace the canvas (default appends a new revision)
   --help           show this help`;
 
 const STYLE: Record<State | 'zone', { stroke: string; bg: string; svg: string; fill: string; dash: 'solid' | 'dashed' | 'dotted' }> = {
@@ -262,7 +266,7 @@ const scaled = (d: Diagram, k: number): Diagram => ({
   })),
 });
 
-export const renderExcalidraw = (spec: Diagram) => {
+export const renderExcalidraw = (spec: Diagram, namespace = '') => {
   const d = scaled(spec, EXCALIDRAW_SCALE);
   let seed = 1000;
   const nextSeed = () => (seed += 97);
@@ -310,7 +314,7 @@ export const renderExcalidraw = (spec: Diagram) => {
   };
 
   const elements: Element[] = [];
-  const prefix = `${d.id}-`;
+  const prefix = `${namespace}${d.id}-`;
 
   (d.zones ?? []).forEach((z, i) => {
     elements.push(base({ id: `${prefix}zone-${i}`, type: 'rectangle', x: z.x, y: z.y, width: z.w, height: z.h, strokeColor: STYLE.zone.stroke, strokeStyle: 'dashed', strokeWidth: 1, roundness: { type: 3 } }));
@@ -415,19 +419,27 @@ const canvasUp = async (canvas: string) => {
 
 const pushToCanvas = async ({ canvas, diagrams, replace }: { canvas: string; diagrams: Diagram[]; replace: boolean }) => {
   let offsetY = 0;
-  if (!replace) {
-    const prefixes = diagrams.map((d) => `${d.id}-`);
-    const existing = (await (await fetch(`${canvas}/api/elements`)).json()).elements as { id: string; y?: number; height?: number; isDeleted?: boolean }[];
+  const namespace = `revision-${randomUUID()}-`;
+  if (replace) {
+    const name = `diagram-before-${randomUUID()}`;
+    const snapshot = await fetch(`${canvas}/api/snapshots`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name }), signal: AbortSignal.timeout(10_000),
+    });
+    const saved = await snapshot.json();
+    if (!snapshot.ok || saved.success !== true) throw new Error('Canvas snapshot failed; refusing replacement');
+    console.log(`Saved canvas snapshot ${name}; restore it if replacement fails or edits need recovery.`);
+  } else {
+    const res = await fetch(`${canvas}/api/elements`, { signal: AbortSignal.timeout(10_000) });
+    if (!res.ok) throw new Error(`Could not read existing canvas (${res.status}); refusing push`);
+    const existing = (await res.json()).elements as { y?: number; height?: number; isDeleted?: boolean }[];
     const live = existing.filter((el) => !el.isDeleted);
-    const ours = live.filter((el) => prefixes.some((p) => el.id.startsWith(p)));
-    const others = live.filter((el) => !ours.includes(el));
-    for (const el of ours) await fetch(`${canvas}/api/elements/${encodeURIComponent(el.id)}`, { method: 'DELETE' });
-    if (others.length) offsetY = Math.max(...others.map((el) => (el.y ?? 0) + (el.height ?? 0))) + 200;
+    if (live.length) offsetY = Math.max(...live.map((el) => (el.y ?? 0) + (el.height ?? 0))) + 200;
   }
   const elements: Element[] = [];
   for (const d of diagrams) {
-    const { clipboard, height } = renderExcalidraw(d);
-    elements.push({ id: `${d.id}-heading`, type: 'text', x: 0, y: offsetY - 56, text: d.title, fontSize: 28, fontFamily: 5, strokeColor: '#1e1e1e' });
+    const { clipboard, height } = renderExcalidraw(d, namespace);
+    elements.push({ id: `${namespace}${d.id}-heading`, type: 'text', x: 0, y: offsetY - 56, text: d.title, fontSize: 28, fontFamily: 5, strokeColor: '#1e1e1e' });
     for (const el of clipboard.elements) elements.push({ ...el, y: (el.y as number) + offsetY });
     offsetY += height + 140;
   }
@@ -435,6 +447,7 @@ const pushToCanvas = async ({ canvas, diagrams, replace }: { canvas: string; dia
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ elements, replace }),
+    signal: AbortSignal.timeout(10_000),
   });
   const body = await res.json();
   if (!res.ok || !body.success) throw new Error(`canvas refused the push (${res.status}): ${body.error ?? 'unknown error'}`);
@@ -465,14 +478,20 @@ const main = async () => {
     process.exit(1);
   }
 
-  mkdirSync(values.out, { recursive: true });
+  mkdirSync(dirname(values.out), { recursive: true });
+  try {
+    mkdirSync(values.out);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'EEXIST') throw new Error(`Refusing to overwrite ${values.out}; pick a new --out directory for this revision`);
+    throw error;
+  }
   const scenes: Record<string, unknown> = {};
   const index = [];
   const warnings: string[] = [];
   for (const d of diagrams) {
     const { file, clipboard } = renderExcalidraw(d);
-    writeFileSync(join(values.out, `${d.id}.svg`), renderSvg(d));
-    writeFileSync(join(values.out, `${d.id}.excalidraw`), JSON.stringify(file, null, 2));
+    writeFileSync(join(values.out, `${d.id}.svg`), renderSvg(d), { flag: 'wx' });
+    writeFileSync(join(values.out, `${d.id}.excalidraw`), JSON.stringify(file, null, 2), { flag: 'wx' });
     scenes[d.id] = clipboard;
     index.push({
       id: d.id,
@@ -481,8 +500,10 @@ const main = async () => {
     });
     warnings.push(...fitWarnings(d));
   }
-  writeFileSync(join(values.out, 'scenes.json'), JSON.stringify(scenes));
-  writeFileSync(join(values.out, 'index.json'), JSON.stringify(index, null, 2));
+  const sceneJson = JSON.stringify(scenes);
+  writeFileSync(join(values.out, 'scenes.json'), sceneJson, { flag: 'wx' });
+  writeFileSync(join(values.out, 'scenes.inline.json'), sceneJson.replace(/</g, '\\u003c'), { flag: 'wx' });
+  writeFileSync(join(values.out, 'index.json'), JSON.stringify(index, null, 2), { flag: 'wx' });
   console.log(`Wrote ${diagrams.length} diagram(s) to ${values.out}`);
   if (warnings.length) console.log(`Fit warnings:\n  ${warnings.join('\n  ')}`);
 

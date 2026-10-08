@@ -55,7 +55,7 @@ Three exceptions where one signal is enough because the pattern is unsafe in any
 ### Diff-based (PR, range, staged)
 
 1. Fetch diff plus PR description and linked issues.
-2. **Triage first.** Tests, docs, or non-security config only: short PASS and stop. Do not run every category against a README change.
+2. **Triage first.** Check every changed file, including docs and test fixtures, for credentials, private payloads, and unsafe executable snippets. A fixture label does not make a real credential safe. For docs/tests/non-security config only, give a short PASS and stop only after those checks; skip unrelated application categories.
 3. Group changed files by surface; load matching reference(s).
 4. Review changed lines. Pre-existing issues are out of scope unless CRITICAL and adjacent to the change.
 5. Cross-reference callers: a changed signature on a service method, resolver, or middleware means verifying every caller still enforces what it used to.

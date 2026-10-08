@@ -20,4 +20,6 @@ The pr-automation prose and templates are original work under this repository's 
 
 The Excalidraw folder and launcher are retained local material. This collection's MIT license does not assign a license to that material.
 
+The new `excalidraw/scripts/run-canvas.mjs` supervisor is original work under this repository's MIT notice.
+
 Earlier adapted skills were removed in this revision. They remain only in Git history and the pre-change local backup; their notices are not evidence for the new collection.

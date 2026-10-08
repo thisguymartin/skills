@@ -5,7 +5,7 @@ description: Let several subagents draw on this session's Excalidraw canvas at o
 
 # Excalidraw lanes
 
-Subagents spawned with the Agent tool share this session's `excalidraw` MCP and `CLAUDE_CODE_SESSION_ID` or `CODEX_SESSION_ID`, so they already draw on the parent's canvas. A lane is a dashed frame with a title and a status line that one agent owns. Lanes stop agents drawing over each other and let the user tell them apart.
+Subagents must use the parent's verified canvas URL through shared MCP tools or `EXPRESS_SERVER_URL`; a child session ID alone does not establish a shared canvas. A lane is a dashed frame with a title and a status line that one agent owns. Lanes stop agents drawing over each other and let the user tell them apart.
 
 Codex and other external processes have their own session and cannot reach this canvas.
 
@@ -13,7 +13,7 @@ Codex and other external processes have their own session and cannot reach this 
 
 1. Start the canvas and open a tab per the [excalidraw](../excalidraw/SKILL.md) skill (`--start`, then `--handoff`). Screenshots need an open tab.
 2. `excalidraw-inbox --lanes <name>,<name>,...`, one kebab-case name per agent. It draws each lane below whatever is already on the canvas and prints one JSON line per lane. Re-running it keeps existing lanes where they are.
-3. Dispatch all agents in one message. Give each its line verbatim: "You have an Excalidraw lane. Read `~/.claude/skills/excalidraw-lanes/SKILL.md` and follow its Lane section. Your lane: `<json>`."
+3. Dispatch the authorized agents. Give each the actual installed path to this skill, the verified shared canvas URL, and its lane JSON. Do not assume a `~/.claude/skills` installation in Codex.
 4. When an agent reports back, `get_canvas_screenshot` to check its lane, then `excalidraw-inbox --handoff` so the user's next Send does not report the agent's drawing as theirs.
 5. Reading a Send while agents still run: `added` or `changed` entries whose id starts with a running agent's `prefix` are that agent's own drawing. Everything else is the user talking, including changes to a finished agent's elements.
 6. Only you get Send clicks. Each diff entry drawn inside a lane carries `lane`, and an arrow carries the lane its tip points into. A note written outside every lane with an arrow into one is addressed to that lane. Forward the user's entries for a lane, with the note's id and position and what the screenshot shows there, to that lane's agent with SendMessage. A running agent picks it up mid-task and a finished one resumes with its context. Entries with no `lane` are for you.
