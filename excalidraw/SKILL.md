@@ -5,7 +5,7 @@ description: Work through a diagram with the user on a local Excalidraw canvas i
 
 # Excalidraw canvas
 
-Start or select the intended canvas before drawing. The inbox derives a port from an explicit session ID or the Claude/Codex session environment; its bundled supervisor stops a canvas it starts when the configured owner process exits. An existing canvas can be selected with `EXPRESS_SERVER_URL`. Verify the MCP and inbox point to the same URL; do not assume the host configured them already.
+Start or select the intended canvas before drawing. Use the [yctimlin MCP](https://github.com/yctimlin/mcp_excalidraw); its standard canvas can start through `npx -y mcp-excalidraw-server@2.1.2 start`. For per-session startup, the inbox derives a port from an explicit session ID or the Claude/Codex session environment; its bundled supervisor stops a canvas it starts when the configured owner process exits. Select an existing canvas with `EXPRESS_SERVER_URL`. Verify the MCP and inbox point to the same URL; do not assume the host configured them already.
 
 Setup (MCP server, launcher, CLI): [INSTALL.md](./INSTALL.md).
 
@@ -24,7 +24,7 @@ Per-session files live in `~/mcp/excalidraw-data/sessions/<session-id>/`: `scene
 5. **Answer in the conversation and on the canvas.** A question written on the canvas gets its answer drawn right beside it, touching it or one gap away. Change the drawing too when the annotations ask for a change.
 6. **Re-hand off after every canvas edit you make** (`--handoff` again). The next click diffs against the newest `claude-*` snapshot, so skipping this reports your own edits back as theirs.
 
-**Status that changes goes in its own text element.** After a canvas restart, `update_element` on a shape's label reports success but the old bound text keeps rendering. Put each changing status line in a standalone `text` element with an id you chose (`s-<ticket>`), place it under its shape, and update that element instead of the label. Screenshot after the first update to confirm it rendered.
+Put changing status lines in standalone `text` elements with chosen IDs (`s-<ticket>`), placed under their shapes. Update that element and screenshot after the first update to confirm it rendered.
 
 `excalidraw-inbox` with no flag prints the diff since the last handoff/send without waiting for a click.
 

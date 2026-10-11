@@ -11,7 +11,7 @@ Codex and other external processes have their own session and cannot reach this 
 
 ## Parent
 
-1. Start the canvas and open a tab per the [excalidraw](../excalidraw/SKILL.md) skill (`--start`, then `--handoff`). Screenshots need an open tab.
+1. Start the canvas and open a tab per the [excalidraw](../excalidraw/SKILL.md) skill (`--start`, then `--handoff`). Current upstream screenshots work headlessly; keep a tab open for live viewing and viewport control.
 2. `excalidraw-inbox --lanes <name>,<name>,...`, one kebab-case name per agent. It draws each lane below whatever is already on the canvas and prints one JSON line per lane. Re-running it keeps existing lanes where they are.
 3. Dispatch the authorized agents. Give each the actual installed path to this skill, the verified shared canvas URL, and its lane JSON. Do not assume a `~/.claude/skills` installation in Codex.
 4. When an agent reports back, `get_canvas_screenshot` to check its lane, then `excalidraw-inbox --handoff` so the user's next Send does not report the agent's drawing as theirs.

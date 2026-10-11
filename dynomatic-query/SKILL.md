@@ -12,9 +12,11 @@ Turn a question about DynamoDB data into a small, bounded evidence record: which
 
 Take the question, AWS profile name, region, table name, the key or filter that identifies the item(s), and the expected result. Reuse scope already established in the conversation. If the profile or table is unknown, discover it with the tools below and ask only for what is still missing.
 
-Check the MCP is reachable: call `app_status` (or list tools and confirm `dynomatic` tools exist). If no Dynomatic tools are present, the app is not running, its MCP server is off, or the client is not registered. Read [tools.md](tools.md) for the install commands for Claude Code and Codex, then stop and tell the user which step is missing. Do not install, start the app, or edit client config as a side effect.
+Check the MCP is reachable: call `app_status` (or list tools and confirm `dynomatic` tools exist). The stdio bridge can connect while the app is closed, but returns no tools until the app is open with MCP enabled. If no tools are present, check the bridge's diagnostic and client registration. Read [tools.md](tools.md) for the install commands for Claude Code and Codex, then tell the user which step is missing. Do not install, start the app, or edit client config as a side effect.
 
 Tool names and schemas come from the live `tools/list`; the names in tools.md were checked against Dynomatic 1.2.0 and may differ in newer versions. Installed schema wins.
+
+The [worked examples](examples.md) cover order debugging, missing list results, table modeling, PartiQL, and manual query review with synthetic data.
 
 ## Find scope
 

@@ -1,18 +1,18 @@
 # Dynomatic MCP: install and tool reference
 
-Checked against Dynomatic 1.2.0 on 2026-10-06. Live `tools/list` output wins when versions differ. Sources: [MCP feature page](https://app.dynomatic.io/features/mcp-server), [tool reference](https://app.dynomatic.io/docs/mcp/tools), [connect a client](https://app.dynomatic.io/docs/mcp/connect-a-client).
+Use [Dynomatic](https://app.dynomatic.io/), the desktop DynamoDB app. Tool names were originally checked against Dynomatic 1.2.0; connection guidance was reviewed against the official docs on 2026-10-10. Live `tools/list` output wins when versions differ. Sources: [tool reference](https://app.dynomatic.io/docs/mcp/tools), [connect a client](https://app.dynomatic.io/docs/mcp/connect-a-client).
 
 ## Prerequisites
 
-1. Dynomatic desktop app installed and running. The MCP server lives inside the app; nothing works while the app is closed.
-2. In the app: Settings -> MCP Server -> enable. It binds `127.0.0.1:47474` behind a bearer token shown in that panel.
+1. Dynomatic desktop app installed. Open it to use its database tools.
+2. In the app: Settings -> MCP Server -> enable. Direct HTTP uses loopback with a bearer token. The default port is 47474; use the endpoint shown in Settings if it differs.
 3. Leave "Allow writes" and "Allow production writes" off for research use.
 
 Sample Mode needs no AWS credentials and is the right place to test this skill.
 
 ## Register the client
 
-Recommended: stdio bridge. The app's own binary proxies to the local HTTP server, so no token lands in client config.
+Use Settings -> MCP Server -> Add Dynomatic to a client for the command or configuration with your installation's executable path. The stdio bridge proxies to the app's local HTTP server and reads its endpoint file, so no token lands in client config. The commands below assume a standard macOS installation; register the client you use.
 
 Claude Code:
 
@@ -28,18 +28,20 @@ codex mcp add dynomatic -- /Applications/Dynomatic.app/Contents/MacOS/dynomatic 
 codex mcp list
 ```
 
+The bridge connects even when Dynomatic is closed, returning an empty tool list and instructions to open the app. It never launches the app. Tools appear on that connection when the app is open with MCP enabled. The bridge also picks up token and port changes.
+
 Direct HTTP alternative, if the bridge is unavailable. The token is a credential; keep it out of shared config and commits.
 
 ```bash
 claude mcp add --transport http dynomatic http://127.0.0.1:47474/mcp --header "Authorization: Bearer <token>"
-codex mcp add dynomatic --url http://127.0.0.1:47474/mcp
+codex mcp add dynomatic --url http://127.0.0.1:47474/mcp --bearer-token-env-var DYNOMATIC_MCP_TOKEN
 ```
 
-Codex HTTP mode may need the bearer header set in `config.toml`; check `codex mcp add --help` for the current flag. Tools appear without restarting the client once the server is on.
+For Codex HTTP mode, set `DYNOMATIC_MCP_TOKEN` through your existing secret/environment tooling before launching the client. Keep its value out of prompts, shared files, and commits. Check `codex mcp add --help` if your installed CLI differs. Direct HTTP reports a connection error while the app is closed.
 
 Troubleshooting: `app_status` missing from the tool list -> app closed or server off. Connection refused on 47474 -> server off. 401 -> stale token after regenerating it in the app.
 
-## Tool groups (35 tools, 2 resources)
+## Tool groups
 
 Read-only, safe for investigation:
 
@@ -94,3 +96,5 @@ Example argument shape (synthetic):
 ```
 
 This illustrates key selection and limits only. Add the live tool's projection parameter before reading real data; if no safe projection is supported, use Sample Mode or metadata instead. Exact parameter names come from the live schema.
+
+For complete prompts and the checks each question needs, see the [investigation examples](examples.md).

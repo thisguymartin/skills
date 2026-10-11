@@ -1,84 +1,168 @@
 # thisguyskills
 
-My research and PR toolkit for coding agents. Understand a project, pull context from the tools I use, explain it with diagrams, turn it into an HTML plan, save useful work in Martin's Brain in Notion, and prepare readable PRs when requested.
+Skills for Claude Code and Codex that I use to research projects, investigate bugs, plan features, and prepare PRs. They work with local repos and the tools I already use: GitHub, Linear, Notion, Drive, Slack, AWS, Yaak, and [Dynomatic](https://app.dynomatic.io/).
 
-```text
-Repo + GitHub + Linear + Notion + Drive + Slack + cloud evidence
-  -> gather-context -> project-research -> plan-artifact
-Ticket + open questions + repos -> feature-plan -> answered plan with Excalidraw diagrams
-Repo or feature + "how does it work / what does it cost" -> architecture-report -> layered report (context, containers, flow, code, data, cost, ops, risk) with Excalidraw + HTML
-Sentence + paragraph + Linear issue -> idea-to-pr -> questions + detailed brief -> implement + verify -> security-scan -> pr-automation + humanizer -> PR
-Research + plan + artifact -> notion-brain save -> one Martin's Brain record
-Martin's Brain -> notion-brain recall -> context for the next plan
-Past Claude/Codex discussions -> session-history -> relevant decisions
-Saved API requests -> yaak-query -> endpoint evidence
-A diff or service -> security-scan -> confirmed findings + fixes
-DynamoDB tables -> dynomatic-query -> bounded data evidence
-A diagram I want to annotate -> excalidraw
-Code change -> pr-automation -> create or update one readable PR
-```
+Start with the skill that matches the task. Combine skills when the work needs more context.
 
-Most skills work on their own; idea-to-pr uses security-scan, pr-automation, and an installed Humanizer for delivery. The arrows show useful combinations. Existing artifact builders and artifact-upload still work alongside these skills. Research ends at an explanation or plan unless the request includes saving to Notion. Asking idea-to-pr to deliver through a PR covers its scoped implementation and PR workflow; requests for only research, issue drafts, or a plan stop there. Description edits and local previews have narrower scopes.
+- [Choose a skill](#choose-a-skill)
+- [Install](#install)
+- [Try a workflow](#try-a-workflow)
+- [Set up your tools](#set-up-your-tools)
+- [Use Dynomatic for DynamoDB questions](#use-dynomatic-for-dynamodb-questions)
+- [Run Excalidraw](#run-excalidraw)
+- [Check the repo](#check-the-repo)
 
-## Install the skills
+## Choose a skill
 
-Use `skills@latest` to run the Skills CLI. This repo's npm package is also named `skills`, so plain `npx skills` from this checkout can resolve to the local package and fail with `could not determine executable to run`.
+| You want to... | Skill | What you get |
+|---|---|---|
+| Understand a project or research a feature | [project-research](project-research/SKILL.md) | An HTML brief with code evidence, flows, examples, tradeoffs, and next steps |
+| Collect context across tools | [gather-context](gather-context/SKILL.md) | Sources from repos, GitHub, Linear, Notion, Drive, Slack, and available MCPs |
+| Turn research into something readable | [plan-artifact](plan-artifact/SKILL.md) | Standalone HTML with offline diagrams, source links, and expandable detail |
+| Resolve questions about one feature | [feature-plan](feature-plan/SKILL.md) | Answers grounded in the ticket and repos, with current and proposed diagrams |
+| Explain architecture, costs, or operations | [architecture-report](architecture-report/SKILL.md) | A report at the levels your audience needs, from system context to code and data |
+| Take an idea through implementation to a PR | [idea-to-pr](idea-to-pr/SKILL.md) | Discovery questions, a brief, scoped changes, verification, security review, and a PR |
+| Recover a previous decision | [session-history](session-history/SKILL.md) | Bounded searches of local Claude Code or Codex history |
+| Investigate AWS events, logs, or costs | [cloud-investigate](cloud-investigate/SKILL.md) | Evidence from native AWS CLI commands, Vantage, and available telemetry |
+| Save or recall research in Martin's Brain | [notion-brain](notion-brain/SKILL.md) | One organized Notion record, or context for the next investigation |
+| Query an endpoint already saved in Yaak | [yaak-query](yaak-query/SKILL.md) | A response tied to the intended request and environment |
+| Inspect DynamoDB through Dynomatic | [dynomatic-query](dynomatic-query/SKILL.md) | Bounded, read-only evidence about tables, keys, and item state |
+| Review a diff or service for security issues | [security-scan](security-scan/SKILL.md) | Findings confirmed against code, with impact and suggested fixes |
+| Create, update, or rewrite a PR | [pr-automation](pr-automation/SKILL.md) | A concise description, actual validation, and a diagram when useful |
+| Draw a diagram and review annotations | [excalidraw](excalidraw/SKILL.md) | An editable local canvas: draw -> annotate -> revise |
+| Draw with multiple agents | [excalidraw-lanes](excalidraw-lanes/SKILL.md) | Optional canvas lanes when you explicitly request parallel drawing |
 
-From this checkout, including changes that have not been pushed:
+Research stops at an explanation or plan. Ask explicitly to save to Notion, create issues, or deliver a PR. Invoking `idea-to-pr` to deliver a PR covers its scoped implementation, commit, push, and PR workflow; merging and deployment need their own request. A local preview or description edit keeps that narrower scope.
+
+## Install
+
+From this checkout, including local changes:
 
 ```bash
 npx skills@latest add . -a claude-code codex --skill idea-to-pr architecture-report feature-plan project-research gather-context plan-artifact session-history cloud-investigate notion-brain yaak-query dynomatic-query security-scan pr-automation excalidraw
 ```
 
-Add `-g` for a global install. From GitHub, after these changes are published:
+Add `-g` for a global install. To install the published GitHub version:
 
 ```bash
 npx skills@latest add thisguymartin/skills -g -a claude-code codex --skill idea-to-pr architecture-report feature-plan project-research gather-context plan-artifact session-history cloud-investigate notion-brain yaak-query dynomatic-query security-scan pr-automation excalidraw
 ```
 
-| Skill | Individual install selector |
+For one skill, use its folder name with `--skill`:
+
+```bash
+npx skills@latest add . -a claude-code codex --skill dynomatic-query
+```
+
+Use `skills@latest` in this checkout. The local npm package is also named `skills`, so plain `npx skills` can resolve to this package and fail with `could not determine executable to run`.
+
+Installation adds instructions and bundled helpers. It does not configure MCP servers or remove older skills. Add `--skill excalidraw-lanes` if you need the optional companion. Humanizer is an external skill and must already be installed for `idea-to-pr` delivery.
+
+## Try a workflow
+
+These prompts are examples. Replace paths, issue IDs, and resource names with your own. Database examples use synthetic identifiers.
+
+### Understand a service before changing it
+
+```text
+Use project-research on apps/worker. Follow an order update from the API
+through the queue to DynamoDB. Explain retries and failure cases, show
+which files own each step, and make an HTML brief for a new teammate.
+```
+
+Use `architecture-report` when you need several levels of detail, operating costs, or an explanation for a particular audience:
+
+```text
+Use architecture-report to explain the ordering flow across the frontend
+and worker repos. I need system context, data ownership, and operations.
+Include queue failure handling and the evidence available for AWS costs.
+```
+
+The [architecture levels](architecture-report/altitudes.md), [source guide](architecture-report/sources.md), and [report template](architecture-report/report-template.md) describe that report. Its read-only scanner inventories tracked files without running project code and reads environment variable names only:
+
+```bash
+node architecture-report/scripts/scan-project.ts --root . --app apps/web --out /tmp/scan-web.json
+```
+
+### Plan a feature across repos
+
+```text
+Use feature-plan for this saved-cart issue across the frontend and API
+repos. Should a cart belong to a user or a property? What changes after
+checkout? Check existing branches, explain the current data model, and
+draw the proposed flow in Excalidraw. Plan only.
+```
+
+`feature-plan` follows the ticket trail, reads the affected repos, and answers each question with evidence and a confidence. One diagram spec produces page SVGs and editable `.excalidraw` files. It can also append diagrams to a running canvas while preserving annotations.
+
+```bash
+node feature-plan/scripts/diagrams.ts --spec feature-plan/examples/saved-carts.json --out /tmp/diagrams --no-canvas
+```
+
+Use a new output directory for each revision. See the [diagram format](feature-plan/diagram-format.md).
+
+### Take an idea through to a PR
+
+```text
+Use idea-to-pr with JBT-626 and JBT-627 across the frontend and Biggie.
+Ask me about the behavior and edge cases. Trace both repos and create a
+detailed brief with scoped frontend/backend work, acceptance criteria,
+and verification. Then implement and open the PRs.
+```
+
+The workflow asks discovery questions, investigates the full path, and runs `security-scan` before delivery. It uses `pr-automation` and an installed Humanizer for final descriptions. Separate repos get scoped, linked PRs. To stop earlier, say "plan only" or "only draft the scoped issues". See the [interview guide](idea-to-pr/interview.md) and [working templates](idea-to-pr/templates.md).
+
+For an existing change:
+
+```text
+Use pr-automation to create or update this PR. Base: develop.
+Reviewers: alice. Diagram: auto. Keep it short.
+```
+
+Use `diagram: always` to request a diagram or `diagram: off` to skip it. Description edits do not commit or push. See the [description examples](pr-automation/description.md) and [diagram workflow](pr-automation/diagrams.md). Excalidraw is the first diagram option; the [mer-inkdrop](https://github.com/thisguymartin/mer-inkdrop) backup sends diagram source to mermaid.ink, so use sanitized source.
+
+### Gather evidence and keep the decision
+
+```text
+Use gather-context to collect the issue, related PRs, and the relevant
+Slack discussion about worker retries. Read the original sources and
+call out anything that disagrees. Then use plan-artifact for an HTML plan.
+```
+
+```text
+Save this research and its artifact to Martin's Brain as one record.
+Include the decision, supporting evidence, and unresolved questions.
+```
+
+Saving needs a connected Notion tool with write access. For recall, ask to "pull prior context from Martin's Brain before planning". A preview stays local. Existing artifact builders and `artifact-upload` work alongside these skills when available and sharing is requested.
+
+The bundled helpers also work directly:
+
+```bash
+node gather-context/scripts/github-evidence.ts --repo owner/repo --pr 123 --dry-run
+node session-history/scripts/search-history.ts --provider claude --query "research artifact" --limit 10
+node plan-artifact/scripts/render-brief.ts --input plan-artifact/examples/research-brief.json --output /tmp/research-brief.html
+```
+
+Edit the [synthetic brief](plan-artifact/examples/research-brief.json) before rendering your own. The renderer refuses to overwrite files. History searches default to bounded user prompts; full user/assistant text requires an exact session ID. They read local history, not claude.ai web conversations.
+
+## Set up your tools
+
+Install only what your task needs. The bundled runtime helpers use Node's built-in modules and require Node 22.18+. Repository validation also uses the development dependency `yaml`. Keep your existing Node version manager. See [Node's native TypeScript support](https://nodejs.org/en/learn/typescript/run-natively).
+
+| Task | Requirements |
 |---|---|
-| [excalidraw](#excalidraw) | `--skill excalidraw` |
-| [project-research](#project-research) | `--skill project-research` |
-| [gather-context](#gather-context) | `--skill gather-context` |
-| [plan-artifact](#plan-artifact) | `--skill plan-artifact` |
-| [feature-plan](#feature-plan) | `--skill feature-plan` |
-| [architecture-report](#architecture-report) | `--skill architecture-report` |
-| [idea-to-pr](#idea-to-pr) | `--skill idea-to-pr` |
-| [session-history](#session-history) | `--skill session-history` |
-| [cloud-investigate](#cloud-investigate) | `--skill cloud-investigate` |
-| [notion-brain](#notion-brain) | `--skill notion-brain` |
-| [yaak-query](#yaak-query) | `--skill yaak-query` |
-| [dynomatic-query](#dynomatic-query) | `--skill dynomatic-query` |
-| [security-scan](#security-scan) | `--skill security-scan` |
-| [pr-automation](#pr-automation) | `--skill pr-automation` |
+| Repo research and planning | A checkout or accessible sources; Node for bundled scanners/renderers |
+| GitHub evidence and PR delivery | `git` and authenticated `gh`; repository checks for implementation |
+| Cross-tool context | Connected tools for the sources you want to read; missing access is recorded |
+| AWS investigation | AWS CLI v2 and an authenticated profile; Vantage for cost evidence when connected |
+| Saved API requests | Yaak desktop collection and `@yaakapp/cli` |
+| DynamoDB investigation | Dynomatic desktop app with MCP enabled; AWS access or Sample Mode |
+| Editable diagrams | Node and the [yctimlin Excalidraw MCP](https://github.com/yctimlin/mcp_excalidraw); bundled inbox for annotation diffs |
+| Notion saves | Connected Notion tools with page-write access; attachment tools for local files |
+| Idea-to-PR delivery | `security-scan`, `pr-automation`, an installed Humanizer, and the target repo's tooling |
 
-These commands are documented, not run automatically. Installing this collection does not remove previously installed skills with old names. Inspect your installed collection and explicitly remove obsolete names when requested.
-
-## What I need installed
-
-Use existing CLI tools first. Cloud investigation runs `aws` directly; saved endpoint queries run `yaak` directly; DynamoDB reads go through the Dynomatic app's MCP server. Optional scripts live inside the skill that uses them. `<skill-dir>` in examples means the installed skill folder (or its folder in this checkout).
-
-| Skill | Required for the task | Optional |
-|---|---|---|
-| project-research | Repo/files or accessible sources | `git`, `rg`, current-docs/web tools, connected MCPs, existing artifact skill |
-| gather-context | Access to the sources being researched | GitHub CLI (`gh`) + Node for its shortcut; Linear/Notion/Drive/Slack MCPs |
-| plan-artifact | Node 22.18+ for the bundled renderer, browser to view HTML | Existing HTML/artifact builder; artifact-upload when sharing is requested |
-| feature-plan | Node 22.18+ for the diagram script, access to the ticket and repos | gather-context, project-research, plan-artifact, excalidraw canvas, headless Chrome for the visual check, humanizer for the team message |
-| architecture-report | Node 22.18+ for the scanner, a repo checkout, the host's question tool | gather-context, project-research, cloud-investigate (Vantage, `aws`), feature-plan's diagram script, excalidraw canvas, plan-artifact or an artifact host, humanizer, notion-brain; any connected MCP (GitHub, Linear, Notion, Slack, Datadog, Sentry, Mixpanel, Vercel, DynamoDB, GraphQL) |
-| idea-to-pr | Target repo(s), security-scan + pr-automation + an installed Humanizer for delivery; `git`, authenticated `gh`, repository checks | Linear tools for issue links; gather-context/project-research for deeper investigation; Excalidraw with mer-inkdrop as the PR diagram backup |
-| session-history | Node 22.18+ and local Claude Code or Codex history | No MCP needed; `--root` supports a local export location |
-| cloud-investigate | AWS CLI v2 + authenticated profile for AWS reads | Vantage MCP for costs; Datadog/Mixpanel or other connected telemetry |
-| notion-brain | Connected Notion read tools; page-write access for saves/updates | Notion attachment tools for requested local artifacts; existing research/artifact outputs |
-| yaak-query | Yaak desktop collection + `@yaakapp/cli`; Node/npm to install the CLI | `jq` for local projections/redaction; existing Yaak MCP or official use-yaak skill |
-| security-scan | Repo checkout; `git`, `gh` for PR targets | Package audit tool (`pnpm audit`, `govulncheck`, `pip-audit`) for `--audit` |
-| dynomatic-query | Dynomatic desktop app running with its MCP server enabled, registered in Claude Code or Codex; authenticated AWS profile inside the app | Sample Mode for testing without AWS; excalidraw/plan-artifact for data-model diagrams |
-| pr-automation | `git`, authenticated GitHub CLI (`gh`), repository checks for code delivery | Existing Humanizer skill; Excalidraw skill + drawing/export tools; mer-inkdrop diagram backup; GitHub attachment route |
-| excalidraw | Node, local Excalidraw MCP/canvas, `excalidraw-inbox` launcher | Tablet on the local network; setup needs git/pnpm |
-
-The runtime helpers use Node's built-in modules and need no npm dependencies. Repository validation uses the development-only `yaml` parser installed with pnpm. If you already use a Node version manager, keep using it. The scripts use native TypeScript support; [Node's docs](https://nodejs.org/en/learn/typescript/run-natively) explain the version requirement.
-
-On macOS with Homebrew, convenient installs are:
+On macOS with Homebrew:
 
 ```bash
 brew install awscli gh node ripgrep
@@ -89,9 +173,11 @@ gh auth login
 gh auth status
 ```
 
-Install only what you need. AWS's supported installers are in the [AWS CLI v2 installation guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html); Homebrew is a convenience, not AWS's maintained installer. GitHub CLI's [official installation guide](https://cli.github.com/) covers other systems.
+Homebrew is a convenience. AWS maintains its own [CLI v2 installers](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html); GitHub CLI has an [installation guide](https://cli.github.com/) for other systems.
 
-For an AWS account using IAM Identity Center:
+### AWS profiles
+
+Reuse your organization profile when one is configured. For IAM Identity Center:
 
 ```bash
 aws configure sso --profile research-dev
@@ -99,11 +185,13 @@ aws sso login --profile research-dev
 aws sts get-caller-identity --profile research-dev
 ```
 
-Use your existing organization profile if one is already configured. Compare the account returned by the last command with the intended account before resource reads. Do not paste access keys into prompts or files. [AWS SSO setup](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html).
+Check the returned account before resource reads. Keep access keys out of prompts and files. See [AWS SSO setup](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sso.html).
 
-For Linear, Notion, Drive, Slack, Vantage, and other MCPs, connect them through your agent's normal connector setup. The skills discover available tools and can proceed with partial context; they do not install MCPs or change credentials. Plain CLI commands are welcome when they provide the evidence more directly.
+`cloud-investigate` runs native `aws` commands. For example, ask it to trace why a worker stopped processing orders, using queue metadata and a bounded CloudWatch log window. The [AWS and cost guide](cloud-investigate/aws-and-costs.md) has commands and synthetic targets. Receiving an SQS message changes its visibility and receive count, so sampling messages needs a separate request. See [AWS receive behavior](https://docs.aws.amazon.com/cli/latest/reference/sqs/receive-message.html).
 
-For Yaak, install the [desktop app](https://yaak.app/docs/getting-started/installation) if needed, then its official CLI:
+### Yaak
+
+Install the [desktop app](https://yaak.app/docs/getting-started/installation), then its official CLI:
 
 ```bash
 npm install -g @yaakapp/cli
@@ -111,172 +199,104 @@ yaak --version
 yaak workspace list
 ```
 
-Optional on macOS: `brew install jq` for local JSON projections. Examples were checked with CLI 2026.8.1; use installed `--help` when versions differ. The CLI automatically uses the app's local collection; no Yaak server or custom wrapper is needed. `yaak auth` is for plugin publishing; endpoint authentication comes from saved requests/environments. [Yaak CLI docs](https://yaak.app/docs/getting-started/cli-usage).
-
-Yaak also ships a general skill through `yaak agent install`. That writes global agent skill directories and refreshes its own use-yaak skill. It is optional and separate from installing this collection; yaak-query adds the research/evidence workflow and does not replace Yaak's managed skill.
-
-## Skills
-
-### [excalidraw](./excalidraw/)
-
-The local canvas round trip: draw -> hand over -> read annotations -> update the diagram. The bundled launcher supports Claude/Codex session settings and restores saved scenes. The parallel-lanes companion is optional. See [canvas setup](excalidraw/INSTALL.md); manual annotation works with the standard frontend, while Send to Claude listening needs its customized frontend.
-
-> "draw this in excalidraw", "let me annotate it", "check the canvas"
-
-### [project-research](./project-research/)
-
-The main project/feature deep dive. Traces the domain, code and context, explains current behavior, compares proposed changes, and creates a detailed HTML brief with flows, examples, evidence, tradeoffs, and a plan. Keeps technical depth available for engineers while making the main explanation readable for product and leadership.
-
-> "research this project and explain how it works", "research this feature before we build it", "make a detailed visual research brief"
-
-### [gather-context](./gather-context/)
-
-Pulls relevant context from GitHub, Linear, Notion, Drive, Slack, local files, and other available MCPs. Fetches actual sources, reconciles contradictions, and records dates and access gaps. Its GitHub shortcut calls `gh` directly.
-
-> "pull the context from Linear and Slack", "research this across Notion, Drive and GitHub", "collect the evidence for this decision"
-
-```bash
-node gather-context/scripts/github-evidence.ts --repo owner/repo --pr 123 --dry-run
-```
-
-### [plan-artifact](./plan-artifact/)
-
-Turns evidence and a plan into a standalone HTML explanation. The included renderer produces offline SVG diagrams, source links, expandable detail, alternatives, and steps with completion checks. It complements your existing artifact skill and upload workflow.
-
-> "turn this research into an HTML plan", "make the current and proposed flows visual", "create a readable explanation I can share"
-
-```bash
-node plan-artifact/scripts/render-brief.ts --input plan-artifact/examples/research-brief.json --output /tmp/research-brief.html
-```
-
-Edit the [synthetic example](plan-artifact/examples/research-brief.json), render it with the command above, then open the output locally. The renderer refuses to overwrite existing files; use a new filename for a revision.
-
-### [feature-plan](./feature-plan/)
-
-The whole chain for one request: a ticket, a rough idea, and the questions you half answered ("store it per property? S3 or Dynamo? edit later? one or many?"). Reads the ticket trail, finds branches and memos that already exist, reads the code in every repo, models the domain, then answers each question with a confidence and draws today, built-on-a-branch and proposed flows. One diagram spec renders the page SVG, `.excalidraw` files, and a push to the live canvas when one is running. Use a new output directory for every revision; canvas pushes append fresh elements and preserve previous annotations.
-
-> "here's the Linear issue, should we store this per property?", "research both repos and give me a visual plan", "plan this with excalidraw diagrams"
-
-```bash
-node feature-plan/scripts/diagrams.ts --spec feature-plan/examples/saved-carts.json --out /tmp/diagrams --no-canvas
-```
-
-### [architecture-report](./architecture-report/)
-
-The report people keep asking for: how a project or feature works, at the altitude they need. Asks up front what the report is for (scope, altitudes, audience, destination), inventories the connected tools, runs a read-only scanner over `git ls-files` for workspaces, infra, routes, schemas, env names and external hosts, then traces each chosen altitude with its own evidence and diagram. Cost goes through cloud-investigate and Vantage and lands on the containers diagram. Diagrams render to the page and the Excalidraw canvas from one spec; prose goes through humanizer before the page is published privately.
-
-> "explain how this project works", "draw the architecture of apps/web", "what does this feature cost to run", "make me an onboarding explainer for the jobs app", "report for leadership on the ordering flow"
-
-```bash
-node architecture-report/scripts/scan-project.ts --root . --app apps/web --out /tmp/scan-web.json
-```
-
-[altitudes.md](architecture-report/altitudes.md) defines each level's question, evidence and diagram; [sources.md](architecture-report/sources.md) maps each connected tool to the altitudes it feeds; [report-template.md](architecture-report/report-template.md) fixes the page order. The scanner never runs project code and reads env variable names only.
-
-### [idea-to-pr](./idea-to-pr/)
-
-One entry point from a rough sentence, paragraph, or Linear issue to a PR. Always asks a meaningful discovery question, follows up in small rounds, and records what the answers change. Traces the frontend, API, backend, saved data, and other consumers where relevant. Builds a detailed brief with domain rules, code evidence, frontend/backend ownership, file-level steps, acceptance cases, and verification. Runs security-scan on each repo's final change before delivery, returns findings to implementation, and rechecks fixes. Uses pr-automation and an installed Humanizer to finish with a concise PR, with Excalidraw for useful flow diagrams; separate repos get scoped, linked PRs.
-
-> "dig into this idea with me, then build it and open a PR", "take this Linear issue through questions to a PR", "figure out the frontend/backend issues we need and keep them scoped"
-
 ```text
-Use idea-to-pr with JBT-626 and JBT-627 across the frontend and Biggie.
-Ask me about the behavior and edge cases. Trace both repos and create a
-detailed brief with scoped frontend/backend work, acceptance criteria,
-and verification. Then implement and open the PRs.
+Use yaak-query to find the saved order-details request in my dev
+workspace. Confirm the environment, send that request, and compare its
+status field with the synthetic DynamoDB example we just inspected.
 ```
 
-For a narrower destination, say "only draft the scoped issues" or "plan only". Existing templates can be supplied; otherwise use the [adaptable working brief and issue templates](idea-to-pr/templates.md). The [interview guide](idea-to-pr/interview.md) shows how questions build on answers. Humanizer is an existing external skill, not bundled or installed automatically. Creating this skill does not publish a PR or create tracker issues.
+Use IDs returned by discovery and follow the [query commands](yaak-query/commands.md). Endpoint authentication comes from saved requests and environments; `yaak auth` is for plugin publishing. Avoid sending a whole workspace, which may run unrelated mutations. Examples were checked with CLI 2026.8.1; use installed `--help` when versions differ. See the [Yaak CLI docs](https://yaak.app/docs/getting-started/cli-usage).
 
-### [session-history](./session-history/)
+Yaak's `yaak agent install` is optional. It writes global skill directories and refreshes Yaak's own `use-yaak` skill; `yaak-query` is a separate research workflow. `jq` is optional for local JSON projections and redaction.
 
-Searches local Claude Code and Codex discussions to recover useful decisions and workflow patterns. Defaults to bounded user prompts; full user/assistant text requires an exact session ID. It does not access claude.ai web history or export entire archives.
+### Other connections and security review
 
-> "look at my past Claude discussions", "what did we decide last time?", "find useful workflows from my previous sessions"
+Connect Linear, Notion, Drive, Slack, Vantage, and telemetry through your agent's normal connector setup. Research skills discover available tools and work with partial context. They do not install connectors or change credentials as a side effect.
 
-```bash
-node session-history/scripts/search-history.ts --provider claude --query "research artifact" --limit 10
-```
+`security-scan` is read-only and accepts a PR, diff, file, directory, or service. For example: "review this PR for tenant authorization gaps and browser data exposure." It traces code and reports confirmed findings with severity, OWASP category, impact, and a suggested fix. It loads its [backend](security-scan/backend.md) and [frontend](security-scan/frontend.md) guides as needed; dependency auditing is optional with `--audit`.
 
-### [cloud-investigate](./cloud-investigate/)
+## Use Dynomatic for DynamoDB questions
 
-Traces cloud events and cost questions using AWS CLI, Vantage and telemetry tools. The skill instructs the agent to confirm account/region, then run native `aws` commands for SQS metadata or a bounded CloudWatch log window. The log example displays event metadata and pagination tokens; raw message bodies stay local for redaction. Install AWS CLI v2 and authenticate a profile; this skill needs no Node helper.
+We use [Dynomatic](https://app.dynomatic.io/), the desktop DynamoDB app, through its built-in MCP server. `dynomatic-query` investigates item state, table design, and disagreements between stored data and the UI. It stays read-only.
 
-> "investigate this SQS event path", "fetch the worker logs with AWS CLI", "research this cost increase in Vantage"
+### Connect Dynomatic
 
-```bash
-aws sts get-caller-identity --profile research-dev --region us-west-2 --output json --no-cli-pager
-```
+1. Install and open Dynomatic.
+2. Open Settings -> MCP Server and enable the server. Leave write permissions off for investigation.
+3. In "Add Dynomatic to a client", select Claude Code or Codex and use the generated command or configuration. It includes the executable path for your installation.
 
-After checking the returned account, use the [SQS and CloudWatch commands](cloud-investigate/aws-and-costs.md). The example targets are synthetic; replace them with the confirmed resources.
-
-`receive-message` changes visibility/receive counts; message sampling is a separate authorized action. Queue metadata and logs are the normal investigation path. [AWS receive behavior](https://docs.aws.amazon.com/cli/latest/reference/sqs/receive-message.html).
-
-### [yaak-query](./yaak-query/)
-
-Finds saved requests, resolves the intended environment, queries an HTTP/GraphQL endpoint with native Yaak CLI, and explains the response as research evidence. Checks fresh response IDs, HTTP/application errors and pagination; keeps raw payloads local. It can create or adjust saved queries when that is part of the request.
-
-> "use the endpoint I already have in Yaak", "query this API through Yaak", "check the response history", "save this query in my Yaak workspace"
-
-```bash
-yaak workspace list
-yaak request list wk_synthetic
-yaak environment list wk_synthetic
-```
-
-Use IDs returned by discovery, then follow the [native query commands](yaak-query/commands.md). A whole workspace send can execute unrelated mutations; discovery lists requests without sending them. No helper script is included.
-
-### [dynomatic-query](./dynomatic-query/)
-
-Answers DynamoDB data questions through the Dynomatic desktop app's MCP server: which tables exist, how a single-table model is keyed, and why data disagrees with the UI. Classifies prod vs non-prod first, prefers key reads over scans, and requires safe server-side projection or masking before item values reach the model. Unsupported projections stop the item read; Sample Mode, metadata, and already redacted exports remain available. Read-only; writes are a separate handoff.
-
-> "what's in this DynamoDB table", "why does this order look wrong in Dynamo", "show me the data model for this table", "set up dynomatic mcp in codex"
+For a standard macOS installation, the stdio bridge commands are:
 
 ```bash
 claude mcp add dynomatic -- /Applications/Dynomatic.app/Contents/MacOS/dynomatic mcp
 codex mcp add dynomatic -- /Applications/Dynomatic.app/Contents/MacOS/dynomatic mcp
 ```
 
-The app must be running with Settings -> MCP Server enabled. [tools.md](dynomatic-query/tools.md) lists the read-only, gated, and write tool groups and the bounded read pattern. Checked against Dynomatic 1.2.0; live tool schemas win.
+Register the client you use. The bridge reads the app's endpoint and token, so you do not put a token in client configuration. It can connect while the app is closed; tools become available when Dynomatic is open with MCP enabled. It does not launch the app. See [Dynomatic's connection guide](https://app.dynomatic.io/docs/mcp/connect-a-client) and the local [setup and tool reference](dynomatic-query/tools.md).
 
-### [pr-automation](./pr-automation/)
-
-Creates or updates the current branch's PR, rewrites a named PR description, or prepares a local preview. Keeps the body short: what changed and why, a few behavior bullets, up to three critical-file review notes, and actual validation. Uses an installed Humanizer skill when available and Excalidraw for flows that need a diagram, with mer-inkdrop as the backup. Description-only updates do not commit or push; delivery stages scoped work and preserves manual PR notes.
-
-> "create a PR", "push these changes and update the PR", "rewrite this PR description", "draft a PR description with an Excalidraw flow"
+### Start with a concrete question
 
 ```text
-Use pr-automation to create or update this PR. Base: develop.
-Reviewers: alice. Diagram: auto. Keep it short.
+Use dynomatic-query in Sample Mode first. Check app_status and the
+environment report, then list the available tables and describe one.
+Explain its primary key and indexes without reading full item payloads.
 ```
 
-See the [description template and examples](pr-automation/description.md) and [diagram workflow](pr-automation/diagrams.md). Use `diagram: always` to request a diagram or `diagram: off` to skip it. Existing Humanizer/Excalidraw/mer-inkdrop tools are discovered, not installed. [mer-inkdrop](https://github.com/thisguymartin/mer-inkdrop) renders through mermaid.ink, so backup diagram source must be sanitized; keep its `.mmd` source and inspect the rendered image before including it. Missing diagram access is reported explicitly.
+For a development table with synthetic data:
 
-### [security-scan](./security-scan/)
+```text
+Use dynomatic-query to investigate why demo order 1042 still looks pending.
+Profile: research-dev. Region: us-west-2. Table: app-main.
+PK: ORG#demo-1. SK: ORDER#1042.
 
-Security review of a PR, diff, file, directory, or whole service in any stack. Detects server vs browser surface from the files, traces every entry point's auth chain, and reports only findings confirmed by reading the code: authz on the wrong resource, permitted-id lists ignored, identity dropped in child containers, unguarded reference resolvers, search indices escaping authz, stale identity claims, cached personalized responses, public build-time secrets. Every finding gets severity, OWASP code, the corroborating signal, impact, and a code fix in about 120 words. Read-only.
+Confirm the account and environment, then inspect the key schema. Read
+only the key, status, updatedAt, and version fields if a safe server-side
+projection is supported. Compare the result with the worker's write path.
+Report the evidence and next check; keep the investigation read-only.
+```
 
-> "security review this PR", "audit this service for vulnerabilities", "is this safe to ship", "look for auth gaps in this diff", "check for XSS and data exposure"
+The [worked examples](dynomatic-query/examples.md) cover missing orders in a list, single-table models, projected PartiQL reads, and opening a query for manual review. Each explains what to ask, what to check, and where the conclusion must stop.
+
+![Dynomatic investigation: confirm scope, inspect keys, select safe fields, read one page, and explain the result](docs/diagrams/dynomatic-investigation.png)
+
+[Open the editable Excalidraw diagram](docs/diagrams/dynomatic-investigation.excalidraw).
+
+Real-data reads require projection or masking before the tool response reaches the model. If the tool cannot return a safe shape, use metadata, Sample Mode, or an already redacted export. Prefer known keys and queries; scans are a last resort. Keep a page limit and cursor. An empty page does not establish absence from the table. Full production scans and exports need an explicit request; writes are outside this skill.
+
+## Run Excalidraw
+
+Use [yctimlin/mcp_excalidraw](https://github.com/yctimlin/mcp_excalidraw). Its npm package provides the MCP server and a local editable canvas. Register it with your client:
 
 ```bash
-gh pr diff 123
-git diff main...HEAD
+claude mcp add excalidraw --scope user -- npx -y mcp-excalidraw-server@2.1.2
+codex mcp add excalidraw -- npx -y mcp-excalidraw-server@2.1.2
 ```
 
-[backend.md](security-scan/backend.md) covers handlers, RPC, GraphQL federation, events, IaC, and integrations including LLM tool access. [frontend.md](security-scan/frontend.md) covers XSS sinks, middleware matchers, server actions, client over-serialization, caching leaks, and framework config. Both load only when the target contains that surface.
+Start the canvas and check its status:
 
-### [notion-brain](./notion-brain/)
+```bash
+npx -y mcp-excalidraw-server@2.1.2 start
+npx -y mcp-excalidraw-server@2.1.2 status
+```
 
-Saves research, plans, cloud/cost evidence, and artifacts as one organized record in Martin's Brain. Reads and summarizes saved decisions and open questions for later planning, or updates a named entry with dated evidence. Uses the live database fields and existing tags; no new database or automatic capture. Local artifacts can be attached directly to Notion when its upload tools are available.
-
-> "save this research and artifact to my brain", "pull prior context from Martin's Brain before planning", "update this entry with the new findings"
+Open [http://127.0.0.1:3000](http://127.0.0.1:3000) to watch or annotate. The MCP server can also start the canvas automatically. Screenshots and image exports run headlessly; Mermaid conversion and viewport changes need an open canvas tab.
 
 ```text
-cloud-investigate + gather-context -> plan-artifact -> notion-brain save
-notion-brain recall -> project-research -> a plan grounded in prior decisions
+Use Excalidraw to draw the order investigation: confirm the environment,
+inspect the table's keys and indexes, select safe fields, read one page,
+then compare the result with the API and UI. Export an editable scene and
+a PNG. Let me annotate the canvas before you revise it.
 ```
 
-See [save, recall, and failure behavior](notion-brain/SKILL.md). Asking to preview a record stays local; asking to save it authorizes one Notion record. Skill creation and installation do not create live records.
+The [canvas setup guide](excalidraw/INSTALL.md) covers custom ports, per-session canvases, persistence, and the bundled `excalidraw-inbox` annotation workflow. Use the same canvas URL in the MCP and inbox. The standard frontend supports manual annotation; a Send to Claude button requires a customized frontend.
+
+Export the scene before stopping the standard canvas; it is in memory by default:
+
+```bash
+npx -y mcp-excalidraw-server@2.1.2 export --out /tmp/order-flow.excalidraw
+npx -y mcp-excalidraw-server@2.1.2 screenshot --out /tmp/order-flow.png
+npx -y mcp-excalidraw-server@2.1.2 stop
+```
 
 ## Check the repo
 
@@ -286,6 +306,6 @@ npm run check
 npm test
 ```
 
-Automated checks cover YAML and local links, artifact preservation, HTML escaping, canvas revisions and recovery snapshots, Codex session discovery, bundled canvas startup/persistence, history filters, and GitHub CLI argument safety. Tests use synthetic files and local mock servers. PR delivery, attachments, and live integrations still need usage in their intended environments; no live AWS, Vantage, Linear, Notion, Slack, or GitHub writes are used for tests.
+Checks cover skill metadata and local links. Synthetic tests also cover artifact preservation, HTML escaping, diagram revisions and recovery, canvas startup/persistence, history filters, and GitHub CLI argument safety. Live integrations, PR delivery, and attachments need verification in their own environments; tests do not write to AWS, Vantage, Linear, Notion, Slack, or GitHub.
 
-Source revisions and adaptations are recorded in [third-party notices](THIRD_PARTY_NOTICES.md). Original skills/scripts are [MIT](LICENSE); adaptations retain Notion's and Yaak's MIT notices. Excalidraw's retained material has its source/license status documented separately.
+Source revisions and adaptations are recorded in [third-party notices](THIRD_PARTY_NOTICES.md). Original skills and scripts are [MIT](LICENSE). Notion and Yaak adaptations retain their notices; retained Excalidraw material has its source and license status documented separately.
